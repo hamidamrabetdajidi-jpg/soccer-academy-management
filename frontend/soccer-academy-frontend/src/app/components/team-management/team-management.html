@@ -1,0 +1,932 @@
+<div class="container-fluid">
+  <div class="row">
+    <!-- Sidebar -->
+    <nav class="col-md-3 col-lg-2 d-md-block sidebar collapse" style="background-color: #2c5530; min-height: 100vh;">
+      <div class="position-sticky pt-3">
+        <div class="text-center mb-4">
+          <h5 class="text-white">Soccer Academy</h5>
+        </div>
+
+        <ul class="nav flex-column">
+          <li class="nav-item">
+            <a class="nav-link text-white" [routerLink]="['/dashboard']">
+              <i class="fas fa-tachometer-alt me-2"></i>Dashboard
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link text-white" [routerLink]="['/users']">
+              <i class="fas fa-users me-2"></i>User Management
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link text-white" [routerLink]="['/players']">
+              <i class="fas fa-user-graduate me-2"></i>Players
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link text-white active" [routerLink]="['/teams']" style="background-color: #5cb85c; border-radius: 0.375rem;">
+              <i class="fas fa-users-cog me-2"></i>Teams
+            </a>
+          </li>
+        </ul>
+
+        <hr class="text-white">
+
+        <ul class="nav flex-column">
+          <li class="nav-item">
+            <a class="nav-link text-white" href="#" (click)="logout()">
+              <i class="fas fa-sign-out-alt me-2"></i>Logout
+            </a>
+          </li>
+        </ul>
+      </div>
+    </nav>
+
+    <!-- Main content -->
+    <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+      <!-- Header -->
+      <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <h1 class="h2">
+          <i class="fas fa-users-cog me-2 text-primary"></i>
+          Team Management
+        </h1>
+        <div class="btn-toolbar">
+          <!-- Export Dropdown -->
+          <div class="btn-group me-2" role="group">
+            <button type="button" class="btn btn-outline-success dropdown-toggle" data-bs-toggle="dropdown">
+              <i class="fas fa-download me-2"></i>Export
+            </button>
+            <ul class="dropdown-menu">
+              <li><a class="dropdown-item" href="#" (click)="exportTeams(); $event.preventDefault()">
+                <i class="fas fa-file-excel me-2 text-success"></i>Export Teams
+              </a></li>
+              <li><a class="dropdown-item" href="#" (click)="printTeams(); $event.preventDefault()">
+                <i class="fas fa-print me-2 text-dark"></i>Print Teams
+              </a></li>
+            </ul>
+          </div>
+          
+          <!-- Create Team Button -->
+          <button type="button" class="btn btn-primary" (click)="openAddTeamModal()">
+            <i class="fas fa-plus me-2"></i>Create Team
+          </button>
+        </div>
+      </div>
+
+      <!-- Search and Filter Section -->
+      <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body">
+          <div class="row g-3">
+            <div class="col-md-4">
+              <label for="searchInput" class="form-label">Search Teams</label>
+              <div class="input-group">
+                <span class="input-group-text"><i class="fas fa-search"></i></span>
+                <input 
+                  type="text" 
+                  class="form-control" 
+                  id="searchInput"
+                  placeholder="Search by team name..."
+                  [(ngModel)]="searchTerm"
+                  (input)="onSearchChange()"
+                >
+                <button 
+                  class="btn btn-outline-secondary" 
+                  type="button" 
+                  (click)="searchTerm = ''; loadTeams()"
+                  *ngIf="searchTerm"
+                  title="Clear search"
+                >
+                  <i class="fas fa-times"></i>
+                </button>
+              </div>
+            </div>
+            <div class="col-md-3">
+              <label for="categoryFilter" class="form-label">Filter by Category</label>
+              <select 
+                class="form-select" 
+                id="categoryFilter" 
+                [(ngModel)]="selectedCategory" 
+                (change)="onCategoryChange()"
+              >
+                <option value="">All Categories</option>
+                <option *ngFor="let category of categories" [value]="category.id">
+                  {{ category.name }}
+                </option>
+              </select>
+            </div>
+            <div class="col-md-3">
+              <label for="seasonFilter" class="form-label">Filter by Season</label>
+              <select 
+                class="form-select" 
+                id="seasonFilter" 
+                [(ngModel)]="selectedSeason" 
+                (change)="onSeasonChange()"
+              >
+                <option value="">All Seasons</option>
+                <option *ngFor="let season of seasons" [value]="season.id">
+                  {{ season.name }}
+                </option>
+              </select>
+            </div>
+            <div class="col-md-2">
+              <label class="form-label">&nbsp;</label>
+              <div>
+                <button type="button" class="btn btn-outline-secondary w-100" (click)="clearFilters()">
+                  <i class="fas fa-times me-2"></i>Clear All
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Success/Error Messages -->
+      <div *ngIf="successMessage" class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="fas fa-check-circle me-2"></i>{{ successMessage }}
+        <button type="button" class="btn-close" (click)="successMessage = ''"></button>
+      </div>
+
+      <div *ngIf="error" class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="fas fa-exclamation-triangle me-2"></i>{{ error }}
+        <button type="button" class="btn-close" (click)="error = ''"></button>
+      </div>
+
+      <!-- Loading -->
+      <div *ngIf="isLoading" class="text-center py-5">
+        <div class="spinner-border text-primary" role="status">
+          <span class="visually-hidden">Loading...</span>
+        </div>
+        <p class="mt-2">Loading teams...</p>
+      </div>
+
+      <!-- Results Summary -->
+      <div class="d-flex justify-content-between align-items-center mb-3" *ngIf="!isLoading">
+        <div>
+          <small class="text-muted">
+            <i class="fas fa-users-cog me-1"></i>
+            Showing <strong>{{ teams.length }}</strong> team{{ teams.length !== 1 ? 's' : '' }}
+            <span *ngIf="searchTerm || selectedCategory || selectedSeason"> matching your filters</span>
+          </small>
+        </div>
+        <div *ngIf="teams.length > 0">
+          <small class="text-muted">
+            Last updated: {{ getCurrentTime() | date:'short' }}
+          </small>
+        </div>
+      </div>
+
+      <!-- Teams Display -->
+      <div *ngIf="!isLoading">
+        <!-- Teams Cards View -->
+        <div class="row" *ngIf="teams.length > 0">
+          <div class="col-md-6 col-lg-4 mb-4" *ngFor="let team of teams">
+            <div class="card h-100 shadow-sm border-0 team-card">
+              <div class="card-header text-white" [style.background]="'linear-gradient(135deg, ' + (team.primary_color || '#2c5530') + ', ' + (team.secondary_color || '#5cb85c') + ')'">
+                <div class="d-flex justify-content-between align-items-center">
+                  <h6 class="mb-0 fw-bold">{{ team.name }}</h6>
+                  <div class="dropdown">
+                    <button class="btn btn-sm btn-light dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                      <i class="fas fa-cog"></i>
+                    </button>
+                    <ul class="dropdown-menu">
+                      <li><a class="dropdown-item" href="#" (click)="viewTeamPlayers(team); $event.preventDefault()">
+                        <i class="fas fa-users me-2"></i>View Players
+                      </a></li>
+                      <li><a class="dropdown-item" href="#" (click)="editTeam(team); $event.preventDefault()">
+                        <i class="fas fa-edit me-2"></i>Edit Team
+                      </a></li>
+                      <li><hr class="dropdown-divider"></li>
+                      <li><a class="dropdown-item text-danger" href="#" (click)="confirmDelete(team); $event.preventDefault()">
+                        <i class="fas fa-trash me-2"></i>Delete Team
+                      </a></li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="card-body">
+                <div class="row g-2 mb-3">
+                  <div class="col-6">
+                    <small class="text-muted">Category:</small><br>
+                    <span class="badge bg-primary">{{ getCategoryName(team.category_id) }}</span>
+                  </div>
+                  <div class="col-6">
+                    <small class="text-muted">Formation:</small><br>
+                    <span class="badge bg-info">{{ team.formation || '4-4-2' }}</span>
+                  </div>
+                  <div class="col-6">
+                    <small class="text-muted">Coach:</small><br>
+                    <span class="text-sm">{{ team.coach_id ? getCoachName(team.coach_id) : 'No Coach' }}</span>
+                  </div>
+                  <div class="col-6">
+                    <small class="text-muted">Players:</small><br>
+                    <span class="badge bg-success">{{ team.players_count || 0 }}</span>
+                  </div>
+                </div>
+
+                <div class="mb-3" *ngIf="team.description">
+                  <small class="text-muted">Description:</small><br>
+                  <small>{{ team.description | slice:0:80 }}{{ (team.description?.length || 0) > 80 ? '...' : '' }}</small>
+                </div>
+
+                <!-- Team Statistics (if available) -->
+                <div class="row g-2" *ngIf="team.matches_played">
+                  <div class="col-3 text-center">
+                    <div class="fw-bold text-success">{{ team.wins || 0 }}</div>
+                    <small class="text-muted">W</small>
+                  </div>
+                  <div class="col-3 text-center">
+                    <div class="fw-bold text-warning">{{ team.draws || 0 }}</div>
+                    <small class="text-muted">D</small>
+                  </div>
+                  <div class="col-3 text-center">
+                    <div class="fw-bold text-danger">{{ team.losses || 0 }}</div>
+                    <small class="text-muted">L</small>
+                  </div>
+                  <div class="col-3 text-center">
+                    <div class="fw-bold text-primary">{{ team.points || 0 }}</div>
+                    <small class="text-muted">Pts</small>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="card-footer bg-transparent">
+                <div class="d-flex justify-content-between align-items-center">
+                  <small class="text-muted">
+                    <i class="fas fa-calendar me-1"></i>
+                    Founded: {{ team.founded_date | date:'shortDate' }}
+                  </small>
+                  <span [class]="'badge ' + (team.is_active ? 'bg-success' : 'bg-danger')">
+                    {{ team.is_active ? 'Active' : 'Inactive' }}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- No Teams Message -->
+        <div *ngIf="teams.length === 0" class="text-center py-5">
+          <i class="fas fa-users-cog fa-5x text-muted mb-3"></i>
+          <h5 class="text-muted">No teams found</h5>
+          <p class="text-muted">Start by creating your first team!</p>
+          <button type="button" class="btn btn-primary" (click)="openAddTeamModal()">
+            <i class="fas fa-plus me-2"></i>Create First Team
+          </button>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<!-- Create Team Modal -->
+<div class="modal" [style.display]="showAddTeamModal ? 'block' : 'none'" [class.show]="showAddTeamModal">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <form [formGroup]="teamForm" (ngSubmit)="saveTeam()">
+        <div class="modal-header">
+          <h5 class="modal-title">
+            <i class="fas fa-plus me-2"></i>Create New Team
+          </h5>
+          <button type="button" class="btn-close" (click)="closeAddTeamModal()"></button>
+        </div>
+        <div class="modal-body">
+          <div class="row g-3">
+            <!-- Team Basic Info -->
+            <div class="col-md-6">
+              <label for="teamName" class="form-label">Team Name *</label>
+              <input 
+                type="text" 
+                class="form-control" 
+                id="teamName"
+                formControlName="name"
+                [class.is-invalid]="isFieldInvalid('name')"
+                placeholder="e.g., Lions, Eagles, Warriors"
+              >
+              <div class="invalid-feedback" *ngIf="isFieldInvalid('name')">
+                Team name is required
+              </div>
+            </div>
+
+            <div class="col-md-6">
+              <label for="teamCategory" class="form-label">Category *</label>
+              <select 
+                class="form-select" 
+                id="teamCategory"
+                formControlName="category_id"
+                [class.is-invalid]="isFieldInvalid('category_id')"
+              >
+                <option value="">Select category</option>
+                <option *ngFor="let category of categories" [value]="category.id">
+                  {{ category.name }} ({{ category.age_min }}-{{ category.age_max }} years)
+                </option>
+              </select>
+              <div class="invalid-feedback" *ngIf="isFieldInvalid('category_id')">
+                Category is required
+              </div>
+            </div>
+
+            <div class="col-md-6">
+              <label for="teamCoach" class="form-label">Coach</label>
+              <select 
+                class="form-select" 
+                id="teamCoach"
+                formControlName="coach_id"
+              >
+                <option value="">No Coach Assigned</option>
+                <option *ngFor="let coach of coaches" [value]="coach.id">
+                  {{ coach.first_name }} {{ coach.last_name }}
+                </option>
+              </select>
+            </div>
+
+            <div class="col-md-6">
+              <label for="teamSeason" class="form-label">Season</label>
+              <select 
+                class="form-select" 
+                id="teamSeason"
+                formControlName="season_id"
+              >
+                <option value="">No Season Assigned</option>
+                <option *ngFor="let season of seasons" [value]="season.id">
+                  {{ season.name }}
+                </option>
+              </select>
+            </div>
+
+            <!-- Team Colors -->
+            <div class="col-md-6">
+              <label for="primaryColor" class="form-label">Primary Color</label>
+              <div class="input-group">
+                <input 
+                  type="color" 
+                  class="form-control form-control-color" 
+                  id="primaryColor"
+                  formControlName="primary_color"
+                  style="width: 60px;"
+                >
+                <input 
+                  type="text" 
+                  class="form-control" 
+                  formControlName="primary_color"
+                  placeholder="#2c5530"
+                >
+              </div>
+            </div>
+
+            <div class="col-md-6">
+              <label for="secondaryColor" class="form-label">Secondary Color</label>
+              <div class="input-group">
+                <input 
+                  type="color" 
+                  class="form-control form-control-color" 
+                  id="secondaryColor"
+                  formControlName="secondary_color"
+                  style="width: 60px;"
+                >
+                <input 
+                  type="text" 
+                  class="form-control" 
+                  formControlName="secondary_color"
+                  placeholder="#5cb85c"
+                >
+              </div>
+            </div>
+
+            <!-- Formation -->
+            <div class="col-md-6">
+              <label for="teamFormation" class="form-label">Formation</label>
+              <select 
+                class="form-select" 
+                id="teamFormation"
+                formControlName="formation"
+              >
+                <option *ngFor="let formation of formations" [value]="formation">
+                  {{ formation }}
+                </option>
+              </select>
+            </div>
+
+            <!-- Team Preview -->
+            <div class="col-md-6">
+              <label class="form-label">Color Preview</label>
+              <div class="d-flex align-items-center">
+                <div 
+                  class="border rounded me-3" 
+                  style="width: 60px; height: 40px;"
+                  [style.background]="'linear-gradient(135deg, ' + (teamForm.get('primary_color')?.value || '#2c5530') + ', ' + (teamForm.get('secondary_color')?.value || '#5cb85c') + ')'"
+                ></div>
+                <small class="text-muted">Team colors preview</small>
+              </div>
+            </div>
+
+            <!-- Description -->
+            <div class="col-12">
+              <label for="teamDescription" class="form-label">Description</label>
+              <textarea 
+                class="form-control" 
+                id="teamDescription"
+                formControlName="description"
+                rows="3"
+                placeholder="Brief description of the team..."
+              ></textarea>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" (click)="closeAddTeamModal()">
+            Cancel
+          </button>
+          <button 
+            type="submit" 
+            class="btn btn-primary"
+            [disabled]="teamForm.invalid || isSubmitting"
+          >
+            <span *ngIf="isSubmitting" class="spinner-border spinner-border-sm me-2"></span>
+            <i *ngIf="!isSubmitting" class="fas fa-plus me-2"></i>
+            Create Team
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Create Team Modal Backdrop -->
+<div *ngIf="showAddTeamModal" class="modal-backdrop fade show"></div>
+
+<!-- Edit Team Modal -->
+<div class="modal" [style.display]="showEditModal ? 'block' : 'none'" [class.show]="showEditModal">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <form [formGroup]="teamForm" (ngSubmit)="saveTeam()">
+        <div class="modal-header">
+          <h5 class="modal-title">
+            <i class="fas fa-edit me-2"></i>Edit Team: {{ editingTeam?.name }}
+          </h5>
+          <button type="button" class="btn-close" (click)="closeEditModal()"></button>
+        </div>
+        <div class="modal-body">
+          <!-- Same form structure as Create Team Modal -->
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label for="editTeamName" class="form-label">Team Name *</label>
+              <input 
+                type="text" 
+                class="form-control" 
+                id="editTeamName"
+                formControlName="name"
+                [class.is-invalid]="isFieldInvalid('name')"
+              >
+              <div class="invalid-feedback" *ngIf="isFieldInvalid('name')">
+                Team name is required
+              </div>
+            </div>
+
+            <div class="col-md-6">
+              <label for="editTeamCategory" class="form-label">Category *</label>
+              <select 
+                class="form-select" 
+                id="editTeamCategory"
+                formControlName="category_id"
+                [class.is-invalid]="isFieldInvalid('category_id')"
+              >
+                <option value="">Select category</option>
+                <option *ngFor="let category of categories" [value]="category.id">
+                  {{ category.name }} ({{ category.age_min }}-{{ category.age_max }} years)
+                </option>
+              </select>
+              <div class="invalid-feedback" *ngIf="isFieldInvalid('category_id')">
+                Category is required
+              </div>
+            </div>
+
+            <div class="col-md-6">
+              <label for="editTeamCoach" class="form-label">Coach</label>
+              <select class="form-select" id="editTeamCoach" formControlName="coach_id">
+                <option value="">No Coach Assigned</option>
+                <option *ngFor="let coach of coaches" [value]="coach.id">
+                  {{ coach.first_name }} {{ coach.last_name }}
+                </option>
+              </select>
+            </div>
+
+            <div class="col-md-6">
+              <label for="editTeamSeason" class="form-label">Season</label>
+              <select class="form-select" id="editTeamSeason" formControlName="season_id">
+                <option value="">No Season Assigned</option>
+                <option *ngFor="let season of seasons" [value]="season.id">
+                  {{ season.name }}
+                </option>
+              </select>
+            </div>
+
+            <div class="col-md-6">
+              <label for="editPrimaryColor" class="form-label">Primary Color</label>
+              <div class="input-group">
+                <input type="color" class="form-control form-control-color" id="editPrimaryColor" formControlName="primary_color" style="width: 60px;">
+                <input type="text" class="form-control" formControlName="primary_color">
+              </div>
+            </div>
+
+            <div class="col-md-6">
+              <label for="editSecondaryColor" class="form-label">Secondary Color</label>
+              <div class="input-group">
+                <input type="color" class="form-control form-control-color" id="editSecondaryColor" formControlName="secondary_color" style="width: 60px;">
+                <input type="text" class="form-control" formControlName="secondary_color">
+              </div>
+            </div>
+
+            <div class="col-md-6">
+              <label for="editTeamFormation" class="form-label">Formation</label>
+              <select class="form-select" id="editTeamFormation" formControlName="formation">
+                <option *ngFor="let formation of formations" [value]="formation">
+                  {{ formation }}
+                </option>
+              </select>
+            </div>
+
+            <div class="col-md-6">
+              <label class="form-label">Color Preview</label>
+              <div class="d-flex align-items-center">
+                <div 
+                  class="border rounded me-3" 
+                  style="width: 60px; height: 40px;"
+                  [style.background]="'linear-gradient(135deg, ' + (teamForm.get('primary_color')?.value || '#2c5530') + ', ' + (teamForm.get('secondary_color')?.value || '#5cb85c') + ')'"
+                ></div>
+                <small class="text-muted">Team colors preview</small>
+              </div>
+            </div>
+
+            <div class="col-12">
+              <label for="editTeamDescription" class="form-label">Description</label>
+              <textarea class="form-control" id="editTeamDescription" formControlName="description" rows="3"></textarea>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" (click)="closeEditModal()">Cancel</button>
+          <button type="submit" class="btn btn-primary" [disabled]="teamForm.invalid || isSubmitting">
+            <span *ngIf="isSubmitting" class="spinner-border spinner-border-sm me-2"></span>
+            <i *ngIf="!isSubmitting" class="fas fa-save me-2"></i>
+            Update Team
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Edit Team Modal Backdrop -->
+<div *ngIf="showEditModal" class="modal-backdrop fade show"></div>
+
+<!-- Delete Team Modal -->
+<div class="modal" [style.display]="showDeleteModal ? 'block' : 'none'" [class.show]="showDeleteModal">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title text-danger">
+          <i class="fas fa-exclamation-triangle me-2"></i>Confirm Delete Team
+        </h5>
+        <button type="button" class="btn-close" (click)="closeDeleteModal()"></button>
+      </div>
+      <div class="modal-body">
+        <div class="text-center mb-3" *ngIf="teamToDelete">
+          <div class="mb-3">
+            <div 
+              class="rounded-circle mx-auto d-flex align-items-center justify-content-center" 
+              style="width: 80px; height: 80px;"
+              [style.background]="'linear-gradient(135deg, ' + (teamToDelete.primary_color || '#2c5530') + ', ' + (teamToDelete.secondary_color || '#5cb85c') + ')'"
+            >
+              <i class="fas fa-users-cog fa-2x text-white"></i>
+            </div>
+          </div>
+          <h5 class="fw-bold">{{ teamToDelete.name }}</h5>
+          <p class="text-muted">{{ getCategoryName(teamToDelete.category_id) }}</p>
+        </div>
+        
+        <div class="alert alert-danger">
+          <i class="fas fa-exclamation-triangle me-2"></i>
+          <strong>Warning:</strong> This action cannot be undone!
+        </div>
+        
+        <p class="text-center">Are you sure you want to permanently delete this team?</p>
+        
+        <div class="bg-light p-3 rounded">
+          <small class="text-muted">
+            <strong>This will remove:</strong><br>
+            • Team information and settings<br>
+            • All player assignments<br>
+            • Match history and statistics<br>
+            • Training records
+          </small>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="closeDeleteModal()">Cancel</button>
+        <button type="button" class="btn btn-danger" (click)="deleteTeam()" [disabled]="isSubmitting">
+          <span *ngIf="isSubmitting" class="spinner-border spinner-border-sm me-2"></span>
+          <i *ngIf="!isSubmitting" class="fas fa-trash me-2"></i>
+          Delete Team
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Delete Team Modal Backdrop -->
+<div *ngIf="showDeleteModal" class="modal-backdrop fade show"></div>
+
+<!-- Team Players Modal -->
+<div class="modal" [style.display]="showPlayersModal ? 'block' : 'none'" [class.show]="showPlayersModal">
+  <div class="modal-dialog modal-xl">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">
+          <i class="fas fa-users me-2"></i>
+          {{ selectedTeam?.name }} - Players Roster
+        </h5>
+        <button type="button" class="btn-close" (click)="closePlayersModal()"></button>
+      </div>
+      <div class="modal-body">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <div>
+            <span class="badge bg-primary me-2">{{ getCategoryName(selectedTeam?.category_id || 0) }}</span>
+            <span class="badge bg-info">{{ teamPlayers.length }} Players</span>
+          </div>
+          <button type="button" class="btn btn-success btn-sm" (click)="openAddPlayerToTeam()">
+            <i class="fas fa-user-plus me-2"></i>Add Player
+          </button>
+        </div>
+
+        <div *ngIf="teamPlayers.length === 0" class="text-center py-5">
+          <i class="fas fa-users fa-3x text-muted mb-3"></i>
+          <h6 class="text-muted">No players assigned</h6>
+          <p class="text-muted">Start building your team by adding players!</p>
+          <button type="button" class="btn btn-primary" (click)="openAddPlayerToTeam()">
+            <i class="fas fa-user-plus me-2"></i>Add First Player
+          </button>
+        </div>
+
+        <div class="row" *ngIf="teamPlayers.length > 0">
+          <div class="col-md-6 mb-3" *ngFor="let teamPlayer of teamPlayers">
+            <div class="card border-0 shadow-sm">
+              <div class="card-body p-3">
+                <div class="d-flex align-items-center">
+                  <div class="me-3">
+                    <img 
+                      *ngIf="teamPlayer.photo_url" 
+                      [src]="getPhotoUrl(teamPlayer.photo_url)" 
+                      class="rounded-circle" 
+                      width="50" 
+                      height="50"
+                      style="object-fit: cover;"
+                    >
+                    <div 
+                      *ngIf="!teamPlayer.photo_url" 
+                      class="bg-light rounded-circle d-flex align-items-center justify-content-center" 
+                      style="width: 50px; height: 50px;"
+                    >
+                      <i class="fas fa-user-graduate text-muted"></i>
+                    </div>
+                  </div>
+                  <div class="flex-grow-1">
+                    <h6 class="mb-1">
+                      {{ teamPlayer.player_name }}
+                      <span class="badge bg-warning text-dark ms-2" *ngIf="teamPlayer.is_captain">C</span>
+                      <span class="badge bg-info ms-1" *ngIf="teamPlayer.is_vice_captain">VC</span>
+                    </h6>
+                    <small class="text-muted">{{ teamPlayer.player_registration_number }}</small>
+                    <div class="mt-1">
+                      <span class="badge bg-secondary me-1" *ngIf="teamPlayer.position">{{ teamPlayer.position }}</span>
+                      <span class="badge bg-primary" *ngIf="teamPlayer.jersey_number">#{{ teamPlayer.jersey_number }}</span>
+                    </div>
+                  </div>
+                  <div class="dropdown">
+                    <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                      <i class="fas fa-cog"></i>
+                    </button>
+                    <ul class="dropdown-menu">
+                      <li><a class="dropdown-item" href="#" (click)="editTeamPlayer(teamPlayer); $event.preventDefault()">
+                        <i class="fas fa-edit me-2"></i>Edit Role
+                      </a></li>
+                      <li><hr class="dropdown-divider"></li>
+                      <li><a class="dropdown-item text-danger" href="#" (click)="removePlayerFromTeam(teamPlayer); $event.preventDefault()">
+                        <i class="fas fa-user-minus me-2"></i>Remove
+                      </a></li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="closePlayersModal()">Close</button>
+        <button type="button" class="btn btn-success" (click)="openAddPlayerToTeam()">
+          <i class="fas fa-user-plus me-2"></i>Add More Players
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="modal" [style.display]="showAddPlayerModal ? 'block' : 'none'" [class.show]="showAddPlayerModal">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">
+          <i class="fas fa-user-plus me-2"></i>Add Player to {{ selectedTeam?.name }}
+        </h5>
+        <button type="button" class="btn-close" (click)="closeAddPlayerModal()"></button>
+      </div>
+      <div class="modal-body">
+        <!-- Available Players List -->
+        <div class="mb-3">
+          <label class="form-label">Available Players ({{ getCategoryName(selectedTeam?.category_id || 0) }})</label>
+          <div class="input-group mb-3">
+            <span class="input-group-text"><i class="fas fa-search"></i></span>
+            <input 
+              type="text" 
+              class="form-control" 
+              placeholder="Search available players..."
+              [(ngModel)]="playerSearchTerm"
+              (input)="filterAvailablePlayers()"
+            >
+          </div>
+        </div>
+
+        <div *ngIf="players.length === 0" class="text-center py-4">
+          <i class="fas fa-user-graduate fa-3x text-muted mb-3"></i>
+          <h6 class="text-muted">No available players</h6>
+          <p class="text-muted">All players in this category are already assigned to teams.</p>
+        </div>
+
+        <div class="row" *ngIf="players.length > 0">
+          <div class="col-md-6 mb-3" *ngFor="let player of filteredPlayers">
+            <div class="card border-0 shadow-sm">
+              <div class="card-body p-3">
+                <div class="d-flex align-items-center">
+                  <div class="me-3">
+                    <img 
+                      *ngIf="player.photo_url" 
+                      [src]="getPhotoUrl(player.photo_url)" 
+                      class="rounded-circle" 
+                      width="50" 
+                      height="50"
+                      style="object-fit: cover;"
+                    >
+                    <div 
+                      *ngIf="!player.photo_url" 
+                      class="bg-light rounded-circle d-flex align-items-center justify-content-center" 
+                      style="width: 50px; height: 50px;"
+                    >
+                      <i class="fas fa-user-graduate text-muted"></i>
+                    </div>
+                  </div>
+                  <div class="flex-grow-1">
+                    <h6 class="mb-1">{{ player.first_name }} {{ player.last_name }}</h6>
+                    <small class="text-muted">{{ player.registration_number }}</small>
+                    <div class="mt-1">
+                      <span class="badge bg-info me-1">{{ calculateAge(player.date_of_birth) }} years</span>
+                      <span class="badge bg-secondary">{{ player.gender === 'M' ? 'Male' : 'Female' }}</span>
+                    </div>
+                  </div>
+                  <div>
+                    <button 
+                      type="button" 
+                      class="btn btn-primary btn-sm"
+                      (click)="selectPlayerForTeam(player)"
+                    >
+                      <i class="fas fa-plus"></i>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="closeAddPlayerModal()">
+          Close
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Add Player Modal Backdrop -->
+<div *ngIf="showAddPlayerModal" class="modal-backdrop fade show"></div>
+
+<!-- Player Assignment Details Modal -->
+<div class="modal" [style.display]="showPlayerDetailsModal ? 'block' : 'none'" [class.show]="showPlayerDetailsModal">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form [formGroup]="playerAssignmentForm" (ngSubmit)="addPlayerToTeam()">
+        <div class="modal-header">
+          <h5 class="modal-title">
+            <i class="fas fa-user-cog me-2"></i>Player Assignment Details
+          </h5>
+          <button type="button" class="btn-close" (click)="closePlayerDetailsModal()"></button>
+        </div>
+        <div class="modal-body" *ngIf="selectedPlayerForAssignment">
+          <!-- Player Info -->
+          <div class="text-center mb-4">
+            <img 
+              *ngIf="selectedPlayerForAssignment.photo_url" 
+              [src]="getPhotoUrl(selectedPlayerForAssignment.photo_url)" 
+              class="rounded-circle mb-2" 
+              width="80" 
+              height="80"
+              style="object-fit: cover;"
+            >
+            <div 
+              *ngIf="!selectedPlayerForAssignment.photo_url" 
+              class="bg-light rounded-circle d-flex align-items-center justify-content-center mx-auto mb-2" 
+              style="width: 80px; height: 80px;"
+            >
+              <i class="fas fa-user-graduate fa-2x text-muted"></i>
+            </div>
+            <h5>{{ selectedPlayerForAssignment.first_name }} {{ selectedPlayerForAssignment.last_name }}</h5>
+            <p class="text-muted">{{ selectedPlayerForAssignment.registration_number }}</p>
+          </div>
+
+          <!-- Assignment Details -->
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label for="playerPosition" class="form-label">Position</label>
+              <select class="form-select" id="playerPosition" formControlName="position">
+                <option value="">Select Position</option>
+                <option value="Goalkeeper">Goalkeeper</option>
+                <option value="Defender">Defender</option>
+                <option value="Midfielder">Midfielder</option>
+                <option value="Forward">Forward</option>
+                <option value="Striker">Striker</option>
+                <option value="Winger">Winger</option>
+              </select>
+            </div>
+            <div class="col-md-6">
+              <label for="jerseyNumber" class="form-label">Jersey Number</label>
+              <input 
+                type="number" 
+                class="form-control" 
+                id="jerseyNumber"
+                formControlName="jersey_number"
+                min="1" 
+                max="99"
+                placeholder="1-99"
+              >
+              <small class="form-text text-muted">Must be unique within the team</small>
+            </div>
+            <div class="col-md-6">
+              <div class="form-check">
+                <input 
+                  class="form-check-input" 
+                  type="checkbox" 
+                  id="isCaptain"
+                  formControlName="is_captain"
+                >
+                <label class="form-check-label" for="isCaptain">
+                  Team Captain
+                </label>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="form-check">
+                <input 
+                  class="form-check-input" 
+                  type="checkbox" 
+                  id="isViceCaptain"
+                  formControlName="is_vice_captain"
+                >
+                <label class="form-check-label" for="isViceCaptain">
+                  Vice Captain
+                </label>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" (click)="closePlayerDetailsModal()">
+            Cancel
+          </button>
+          <button 
+            type="submit" 
+            class="btn btn-primary"
+            [disabled]="isSubmitting"
+          >
+            <span *ngIf="isSubmitting" class="spinner-border spinner-border-sm me-2"></span>
+            <i *ngIf="!isSubmitting" class="fas fa-user-plus me-2"></i>
+            Add to Team
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Player Details Modal Backdrop -->
+<div *ngIf="showPlayerDetailsModal" class="modal-backdrop fade show"></div>
+<!-- Team Players Modal Backdrop -->
+<div *ngIf="showPlayersModal" class="modal-backdrop fade show"></div>

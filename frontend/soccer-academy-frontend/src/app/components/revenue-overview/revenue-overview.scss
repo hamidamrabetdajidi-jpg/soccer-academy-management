@@ -1,0 +1,135 @@
+// Metric cards with gradients
+.metric-card {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  
+  &:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15) !important;
+  }
+}
+
+.bg-gradient-success {
+  background: linear-gradient(135deg, #28a745, #20c997) !important;
+}
+
+.bg-gradient-primary {
+  background: linear-gradient(135deg, #007bff, #0056b3) !important;
+}
+
+.bg-gradient-warning {
+  background: linear-gradient(135deg, #ffc107, #f39c12) !important;
+}
+
+.bg-gradient-danger {
+  background: linear-gradient(135deg, #dc3545, #e74c3c) !important;
+}
+
+.metric-icon {
+  opacity: 0.7;
+}
+
+// Chart containers
+.chart-container {
+  position: relative;
+  height: 300px;
+  
+  canvas {
+    max-height: 100%;
+  }
+}
+
+// Player ranking
+.player-item {
+  .rank-badge {
+    min-width: 45px;
+    text-align: center;
+  }
+}
+
+// Category and method items
+.category-item, .method-item {
+  padding: 0.5rem 0;
+}
+
+// Card enhancements
+.card {
+  border-radius: 15px;
+  
+  .card-header {
+    border-radius: 15px 15px 0 0;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%) !important;
+  }
+}
+
+// Progress bars
+.progress {
+  border-radius: 10px;
+  
+  .progress-bar {
+    border-radius: 10px;
+  }
+}
+
+// Responsive adjustments
+@media (max-width: 768px) {
+  .chart-container {
+    height: 250px;
+  }
+  
+  .metric-card .card-body {
+    padding: 1rem;
+  }
+  
+  .h4 {
+    font-size: 1.1rem !important;
+  }
+  
+  .h2 {
+    font-size: 1.3rem !important;
+  }
+}
+
+// Animation for cards
+.card {
+  animation: fadeInUp 0.5s ease-in-out;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// Badge enhancements
+.badge {
+  font-size: 0.75rem;
+  padding: 0.4rem 0.6rem;
+  
+  &.bg-warning {
+    color: #212529;
+  }
+}
+
+// Quick actions
+.btn {
+  transition: all 0.3s ease;
+  
+  &:hover {
+    transform: translateY(-1px);
+  }
+}
+
+// Loading and error states
+.spinner-border {
+  animation: spinner-border 0.75s linear infinite;
+}
+
+.alert {
+  border-radius: 10px;
+  border: none;
+}

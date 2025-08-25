@@ -1,0 +1,113 @@
+<div class="container-fluid vh-100">
+  <div class="row h-100">
+    <!-- Left side - Login Form -->
+    <div class="col-md-6 d-flex align-items-center justify-content-center">
+      <div class="card shadow-lg border-0" style="max-width: 400px; width: 100%;">
+        <div class="card-body p-5">
+          <div class="text-center mb-4">
+            <i class="fas fa-futbol fa-3x text-success mb-3"></i>
+            <h2 class="card-title">Soccer Academy</h2>
+            <p class="text-muted">Management System</p>
+          </div>
+
+          <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+            <!-- Alert for errors -->
+            <div *ngIf="error" class="alert alert-danger" role="alert">
+              <i class="fas fa-exclamation-triangle me-2"></i>
+              {{ error }}
+            </div>
+
+            <!-- Username/Email field -->
+            <div class="mb-3">
+              <label for="username" class="form-label">
+                <i class="fas fa-user me-2"></i>Username or Email
+              </label>
+              <input
+                type="text"
+                class="form-control"
+                id="username"
+                formControlName="username"
+                placeholder="Enter your username or email"
+                [class.is-invalid]="isFieldInvalid('username')"
+              >
+              <div class="invalid-feedback" *ngIf="isFieldInvalid('username')">
+                Username or email is required
+              </div>
+            </div>
+
+            <!-- Password field -->
+            <div class="mb-4">
+              <label for="password" class="form-label">
+                <i class="fas fa-lock me-2"></i>Password
+              </label>
+              <div class="input-group">
+                <input
+                  [type]="showPassword ? 'text' : 'password'"
+                  class="form-control"
+                  id="password"
+                  formControlName="password"
+                  placeholder="Enter your password"
+                  [class.is-invalid]="isFieldInvalid('password')"
+                >
+                <button
+                  type="button"
+                  class="btn btn-outline-secondary"
+                  (click)="togglePassword()"
+                >
+                  <i [class]="showPassword ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
+                </button>
+              </div>
+              <div class="invalid-feedback" *ngIf="isFieldInvalid('password')">
+                Password is required
+              </div>
+            </div>
+
+            <!-- Login button -->
+            <button
+              type="submit"
+              class="btn btn-primary w-100 py-2"
+              [disabled]="isLoading || loginForm.invalid"
+            >
+              <span *ngIf="isLoading" class="spinner-border spinner-border-sm me-2"></span>
+              <i *ngIf="!isLoading" class="fas fa-sign-in-alt me-2"></i>
+              {{ isLoading ? 'Signing In...' : 'Sign In' }}
+            </button>
+          </form>
+
+          <!-- Demo credentials info -->
+          <div class="mt-4 p-3 bg-light rounded">
+            <small class="text-muted">
+              <strong>Demo Login:</strong><br>
+              Username: admin<br>
+              Password: admin123
+            </small>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right side - Branding -->
+    <div class="col-md-6 d-none d-md-flex align-items-center justify-content-center" 
+         style="background: linear-gradient(135deg, #2c5530 0%, #5cb85c 100%);">
+      <div class="text-center text-white">
+        <i class="fas fa-users fa-5x mb-4 opacity-75"></i>
+        <h1 class="display-4 fw-bold mb-3">Welcome Back!</h1>
+        <p class="lead mb-4">Manage your soccer academy with ease</p>
+        <div class="row text-center">
+          <div class="col-4">
+            <i class="fas fa-user-graduate fa-2x mb-2"></i>
+            <p>Players</p>
+          </div>
+          <div class="col-4">
+            <i class="fas fa-users fa-2x mb-2"></i>
+            <p>Teams</p>
+          </div>
+          <div class="col-4">
+            <i class="fas fa-calendar fa-2x mb-2"></i>
+            <p>Sessions</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

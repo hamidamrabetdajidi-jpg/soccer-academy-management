@@ -1,0 +1,1294 @@
+<div class="container-fluid">
+  <div class="row">
+    <!-- Sidebar -->
+    <nav class="col-md-3 col-lg-2 d-md-block sidebar collapse" style="background-color: #2c5530; min-height: 100vh;">
+      <div class="position-sticky pt-3">
+        <div class="text-center mb-4">
+          <h5 class="text-white">
+            <i class="fas fa-futbol me-2"></i>Soccer Academy
+          </h5>
+        </div>
+
+        <ul class="nav flex-column">
+          <li class="nav-item">
+            <a class="nav-link text-white" [routerLink]="['/dashboard']">
+              <i class="fas fa-tachometer-alt me-2"></i>Dashboard
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link text-white" [routerLink]="['/users']">
+              <i class="fas fa-users me-2"></i>User Management
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link text-white" [routerLink]="['/players']">
+              <i class="fas fa-user-graduate me-2"></i>Players
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link text-white" [routerLink]="['/teams']">
+              <i class="fas fa-users-cog me-2"></i>Teams
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link text-white" [routerLink]="['/valuations']">
+              <i class="fas fa-chart-line me-2"></i>Player Valuation
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link text-white active" [routerLink]="['/training-sessions']" 
+               style="background-color: #5cb85c; border-radius: 0.375rem;">
+              <i class="fas fa-dumbbell me-2"></i>Training Sessions
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link text-white" [routerLink]="['/attendance']">
+              <i class="fas fa-clipboard-check me-2"></i>Attendance Management
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link text-white" [routerLink]="['/fields']">
+              <i class="fas fa-map-marked-alt me-2"></i>Field Management
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link text-white" [routerLink]="['/payments']">
+              <i class="fas fa-credit-card me-2"></i>Payment Management
+            </a>
+          </li>
+        </ul>
+
+        <hr class="text-white">
+
+        <ul class="nav flex-column">
+          <li class="nav-item">
+            <a class="nav-link text-white" href="#" (click)="logout()">
+              <i class="fas fa-sign-out-alt me-2"></i>Logout
+            </a>
+          </li>
+        </ul>
+      </div>
+    </nav>
+
+    <!-- Main content -->
+    <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+      <!-- Header -->
+      <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <h1 class="h2">
+          <i class="fas fa-dumbbell me-2 text-success"></i>
+          Training Sessions
+        </h1>
+        <div class="btn-toolbar">
+          <button type="button" class="btn btn-success" (click)="openAddModal()">
+            <i class="fas fa-plus me-2"></i>Create Session
+          </button>
+        </div>
+      </div>
+
+      <!-- Search and Filter Section -->
+      <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body">
+          <div class="row g-3">
+            <div class="col-md-3">
+              <label for="searchInput" class="form-label">Search</label>
+              <div class="input-group">
+                <span class="input-group-text">
+                  <i class="fas fa-search"></i>
+                </span>
+                <input 
+                  type="text" 
+                  class="form-control" 
+                  id="searchInput"
+                  placeholder="Search sessions..."
+                  [(ngModel)]="searchTerm"
+                  (input)="onSearchChange()"
+                >
+              </div>
+            </div>
+            <div class="col-md-2">
+              <label for="typeFilter" class="form-label">Session Type</label>
+              <select class="form-select" id="typeFilter" [(ngModel)]="selectedType" (change)="onFilterChange()">
+                <option value="">All Types</option>
+                <option *ngFor="let type of sessionTypes" [value]="type.value">
+                  {{ type.label }}
+                </option>
+              </select>
+            </div>
+            <div class="col-md-2">
+              <label for="startDate" class="form-label">From Date</label>
+              <input 
+                type="date" 
+                class="form-control" 
+                id="startDate"
+                [(ngModel)]="startDate"
+                (change)="onFilterChange()"
+              >
+            </div>
+            <div class="col-md-2">
+              <label for="endDate" class="form-label">To Date</label>
+              <input 
+                type="date" 
+                class="form-control" 
+                id="endDate"
+                [(ngModel)]="endDate"
+                (change)="onFilterChange()"
+              >
+            </div>
+            <div class="col-md-2">
+              <label for="sortBy" class="form-label">Sort By</label>
+              <select class="form-select" id="sortBy" [(ngModel)]="sortBy" (change)="onFilterChange()">
+                <option value="session_date">Date</option>
+                <option value="title">Title</option>
+                <option value="session_type">Type</option>
+                <option value="created_at">Created</option>
+              </select>
+            </div>
+            <div class="col-md-1">
+              <label class="form-label">&nbsp;</label>
+              <div>
+                <button type="button" class="btn btn-outline-secondary w-100" (click)="clearFilters()">
+                  <i class="fas fa-times"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Success/Error Messages -->
+      <div *ngIf="successMessage" class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="fas fa-check-circle me-2"></i>{{ successMessage }}
+        <button type="button" class="btn-close" (click)="successMessage = ''"></button>
+      </div>
+
+      <div *ngIf="error" class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="fas fa-exclamation-triangle me-2"></i>{{ error }}
+        <button type="button" class="btn-close" (click)="error = ''"></button>
+      </div>
+
+      <!-- Loading -->
+      <div *ngIf="isLoading" class="text-center py-5">
+        <div class="spinner-border text-success" role="status">
+          <span class="visually-hidden">Loading...</span>
+        </div>
+        <p class="mt-2">Loading training sessions...</p>
+      </div>
+
+      <!-- Training Sessions Cards -->
+      <div *ngIf="!isLoading">
+        <div class="row" *ngIf="sessions.length > 0">
+          <div class="col-md-6 col-lg-4 mb-4" *ngFor="let session of sessions">
+            <div class="card h-100 shadow-sm border-0 session-card">
+              <div class="card-header" [class]="'bg-' + (session.session_type === 'training' ? 'success' : (session.session_type === 'tactical' ? 'primary' : (session.session_type === 'fitness' ? 'warning' : 'info'))) + ' text-white'">
+                <div class="d-flex justify-content-between align-items-center">
+                  <div>
+                    <h6 class="mb-0 fw-bold">
+                      <i [class]="getSessionTypeIcon(session.session_type) + ' me-2'"></i>
+                      {{ session.title }}
+                    </h6>
+                    <small>{{ getSessionTypeLabel(session.session_type) }}</small>
+                  </div>
+                  <div class="dropdown">
+                    <button class="btn btn-sm btn-light dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                      <i class="fas fa-ellipsis-v"></i>
+                    </button>
+                    <ul class="dropdown-menu">
+                      <li>
+                        <a class="dropdown-item" href="#" (click)="openEditModal(session); $event.preventDefault()">
+                          <i class="fas fa-edit me-2"></i>Edit Session
+                        </a>
+                      </li>
+                      <li>
+                        <a class="dropdown-item" href="#" (click)="openAttendanceModal(session); $event.preventDefault()">
+                          <i class="fas fa-clipboard-check me-2"></i>Mark Attendance
+                        </a>
+                      </li>
+                      <li><hr class="dropdown-divider"></li>
+                      <li>
+                        <a class="dropdown-item text-danger" href="#" (click)="openDeleteModal(session); $event.preventDefault()">
+                          <i class="fas fa-trash me-2"></i>Delete Session
+                        </a>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="card-body">
+                <!-- Session Details -->
+                <div class="mb-3">
+                  <div class="d-flex align-items-center mb-2">
+                    <i class="fas fa-calendar text-info me-2"></i>
+                    <span class="fw-bold">{{ formatDate(session.session_date) }}</span>
+                  </div>
+                  <div class="d-flex align-items-center mb-2" *ngIf="session.start_time">
+                    <i class="fas fa-clock text-warning me-2"></i>
+                    <span>{{ formatTime(session.start_time) }}</span>
+                    <span *ngIf="session.end_time"> - {{ formatTime(session.end_time) }}</span>
+                  </div>
+                  <div class="d-flex align-items-center mb-2" *ngIf="session.field_name">
+                    <i class="fas fa-map-marker-alt text-danger me-2"></i>
+                    <span>{{ session.field_name }}</span>
+                  </div>
+                  <div class="d-flex align-items-center" *ngIf="session.max_participants">
+                    <i class="fas fa-users text-secondary me-2"></i>
+                    <span>Max: {{ session.max_participants }} players</span>
+                  </div>
+                </div>
+
+                <!-- Description -->
+                <div class="mb-3" *ngIf="session.description">
+                  <p class="text-muted mb-0">{{ session.description }}</p>
+                </div>
+
+                <!-- Objectives -->
+                <div class="mb-3" *ngIf="session.objectives">
+                  <small class="text-muted">Objectives:</small>
+                  <p class="small mb-0">{{ session.objectives | slice:0:100 }}{{ session.objectives?.length > 100 ? '...' : '' }}</p>
+                </div>
+
+                <!-- Equipment -->
+                <div class="mb-3" *ngIf="session.equipment_needed">
+                  <small class="text-muted">Equipment:</small>
+                  <div class="d-flex flex-wrap gap-1">
+                    <span class="badge bg-light text-dark" *ngFor="let equipment of session.equipment_needed?.split(',').slice(0, 3)">
+                      {{ equipment.trim() }}
+                    </span>
+                    <span class="badge bg-secondary" *ngIf="session.equipment_needed?.split(',').length > 3">
+                      +{{ session.equipment_needed.split(',').length - 3 }} more
+                    </span>
+                  </div>
+                </div>
+
+                <!-- Status Badges -->
+                <div class="d-flex justify-content-between align-items-center">
+                  <div>
+                    <span class="badge bg-primary me-2">
+                      <i [class]="getSessionTypeIcon(session.session_type) + ' me-1'"></i>
+                      {{ getSessionTypeLabel(session.session_type) }}
+                    </span>
+                    <span class="badge" [class]="session.is_mandatory ? 'bg-danger' : 'bg-info'">
+                      {{ session.is_mandatory ? 'Mandatory' : 'Optional' }}
+                    </span>
+                  </div>
+                  <small class="text-muted">
+                    {{ formatDate(session.created_at) }}
+                  </small>
+                </div>
+              </div>
+              
+              <div class="card-footer bg-transparent">
+                <div class="d-flex justify-content-between align-items-center">
+                  <small class="text-muted">
+                    Created by {{ session.created_by_name || 'Unknown' }}
+                  </small>
+                  <div class="btn-group btn-group-sm">
+                    <button 
+                      class="btn btn-outline-primary" 
+                      (click)="openEditModal(session)"
+                      title="Edit Session"
+                    >
+                      <i class="fas fa-edit"></i>
+                    </button>
+                    
+                    <!-- Attendance Button -->
+                    <button 
+                      class="btn btn-outline-success" 
+                      (click)="openAttendanceModal(session)"
+                      title="Mark Attendance"
+                    >
+                      <i class="fas fa-clipboard-check"></i>
+                    </button>
+                                  
+                    <button 
+                      class="btn btn-outline-danger" 
+                      (click)="openDeleteModal(session)"
+                      title="Delete Session"
+                    >
+                      <i class="fas fa-trash"></i>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- No Sessions Message -->
+        <div *ngIf="sessions.length === 0" class="text-center py-5">
+          <i class="fas fa-dumbbell fa-5x text-muted mb-3"></i>
+          <h5 class="text-muted">No training sessions found</h5>
+          <p class="text-muted">Start by creating your first training session!</p>
+          <button type="button" class="btn btn-success" (click)="openAddModal()">
+            <i class="fas fa-plus me-2"></i>Create First Session
+          </button>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<!-- Add Session Modal -->
+<div class="modal fade" [class.show]="showAddModal" [style.display]="showAddModal ? 'block' : 'none'" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header bg-success text-white">
+        <h5 class="modal-title">
+          <i class="fas fa-plus me-2"></i>Create Training Session
+        </h5>
+        <button type="button" class="btn-close btn-close-white" (click)="closeAddModal()"></button>
+      </div>
+      <form [formGroup]="sessionForm" (ngSubmit)="saveSession()">
+        <div class="modal-body">
+          <div class="row g-3">
+            <!-- Title -->
+            <div class="col-12">
+              <label for="title" class="form-label">Session Title *</label>
+              <input 
+                type="text" 
+                class="form-control" 
+                id="title" 
+                formControlName="title"
+                placeholder="Enter session title"
+                [class.is-invalid]="isFieldInvalid('title')"
+              >
+              <div class="invalid-feedback" *ngIf="isFieldInvalid('title')">
+                Please enter a session title.
+              </div>
+            </div>
+
+            <!-- Session Date -->
+            <div class="col-md-6">
+              <label for="session_date" class="form-label">Session Date *</label>
+              <input 
+                type="date" 
+                class="form-control" 
+                id="session_date" 
+                formControlName="session_date"
+                [class.is-invalid]="isFieldInvalid('session_date')"
+              >
+              <div class="invalid-feedback" *ngIf="isFieldInvalid('session_date')">
+                Please select a session date.
+              </div>
+            </div>
+
+            <!-- Session Type -->
+            <div class="col-md-6">
+              <label for="session_type" class="form-label">Session Type *</label>
+              <select 
+                class="form-select" 
+                id="session_type" 
+                formControlName="session_type"
+                [class.is-invalid]="isFieldInvalid('session_type')"
+              >
+                <option *ngFor="let type of sessionTypes" [value]="type.value">
+                  {{ type.label }}
+                </option>
+              </select>
+              <div class="invalid-feedback" *ngIf="isFieldInvalid('session_type')">
+                Please select a session type.
+              </div>
+            </div>
+
+            <!-- Start Time -->
+            <div class="col-md-6">
+              <label for="start_time" class="form-label">Start Time</label>
+              <input 
+                type="time" 
+                class="form-control" 
+                id="start_time" 
+                formControlName="start_time"
+              >
+            </div>
+
+            <!-- End Time -->
+            <div class="col-md-6">
+              <label for="end_time" class="form-label">End Time</label>
+              <input 
+                type="time" 
+                class="form-control" 
+                id="end_time" 
+                formControlName="end_time"
+              >
+            </div>
+
+            <!-- Max Participants -->
+            <div class="col-md-6">
+              <label for="max_participants" class="form-label">Max Participants</label>
+              <input 
+                type="number" 
+                class="form-control" 
+                id="max_participants" 
+                formControlName="max_participants"
+                min="1"
+                max="50"
+                placeholder="25"
+              >
+            </div>
+
+            <!-- Mandatory -->
+            <div class="col-md-6 d-flex align-items-end">
+              <div class="form-check">
+                <input 
+                  class="form-check-input" 
+                  type="checkbox" 
+                  id="is_mandatory" 
+                  formControlName="is_mandatory"
+                >
+                <label class="form-check-label" for="is_mandatory">
+                  <strong>Mandatory Session</strong>
+                </label>
+              </div>
+            </div>
+
+            <!-- Description -->
+            <div class="col-12">
+              <label for="description" class="form-label">Description</label>
+              <textarea 
+                class="form-control" 
+                id="description" 
+                formControlName="description"
+                rows="3"
+                placeholder="Describe the training session..."
+              ></textarea>
+            </div>
+
+            <!-- Objectives -->
+            <div class="col-12">
+              <label for="objectives" class="form-label">Objectives</label>
+              <textarea 
+                class="form-control" 
+                id="objectives" 
+                formControlName="objectives"
+                rows="2"
+                placeholder="What are the main objectives of this session?"
+              ></textarea>
+            </div>
+
+            <!-- Drills -->
+            <div class="col-md-6">
+              <label for="drills" class="form-label">Drills</label>
+              <textarea 
+                class="form-control" 
+                id="drills" 
+                formControlName="drills"
+                rows="3"
+                placeholder="List the drills to be performed..."
+              ></textarea>
+            </div>
+
+            <!-- Equipment -->
+            <div class="col-md-6">
+              <label for="equipment_needed" class="form-label">Equipment Needed</label>
+              <textarea 
+                class="form-control" 
+                id="equipment_needed" 
+                formControlName="equipment_needed"
+                rows="3"
+                placeholder="List required equipment (cones, balls, etc.)"
+              ></textarea>
+            </div>
+
+            <!-- Weather Conditions -->
+            <div class="col-md-6">
+              <label for="weather_conditions" class="form-label">Weather Conditions</label>
+              <input 
+                type="text" 
+                class="form-control" 
+                id="weather_conditions" 
+                formControlName="weather_conditions"
+                placeholder="Expected weather conditions"
+              >
+            </div>
+
+            <!-- Notes -->
+            <div class="col-12">
+              <label for="notes" class="form-label">Additional Notes</label>
+              <textarea 
+                class="form-control" 
+                id="notes" 
+                formControlName="notes"
+                rows="2"
+                placeholder="Any additional notes or instructions..."
+              ></textarea>
+            </div>
+          </div>
+
+          <!-- Error Message -->
+          <div *ngIf="error" class="alert alert-danger mt-3">
+            <i class="fas fa-exclamation-triangle me-2"></i>{{ error }}
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" (click)="closeAddModal()">
+            <i class="fas fa-times me-2"></i>Cancel
+          </button>
+          <button 
+            type="submit" 
+            class="btn btn-success"
+            [disabled]="isSubmitting || sessionForm.invalid"
+          >
+            <span *ngIf="isSubmitting" class="spinner-border spinner-border-sm me-2"></span>
+            <i *ngIf="!isSubmitting" class="fas fa-save me-2"></i>
+            {{ isSubmitting ? 'Creating...' : 'Create Session' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Edit Session Modal -->
+<div class="modal fade" [class.show]="showEditModal" [style.display]="showEditModal ? 'block' : 'none'" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header bg-primary text-white">
+        <h5 class="modal-title">
+          <i class="fas fa-edit me-2"></i>Edit Training Session
+        </h5>
+        <button type="button" class="btn-close btn-close-white" (click)="closeEditModal()"></button>
+      </div>
+      <form [formGroup]="sessionForm" (ngSubmit)="saveSession()">
+        <div class="modal-body">
+          <!-- Same form fields as Add Modal -->
+          <div class="row g-3">
+            <!-- Title -->
+            <div class="col-12">
+              <label for="edit_title" class="form-label">Session Title *</label>
+              <input 
+                type="text" 
+                class="form-control" 
+                id="edit_title" 
+                formControlName="title"
+                placeholder="Enter session title"
+                [class.is-invalid]="isFieldInvalid('title')"
+              >
+              <div class="invalid-feedback" *ngIf="isFieldInvalid('title')">
+                Please enter a session title.
+              </div>
+            </div>
+
+            <!-- Session Date -->
+            <div class="col-md-6">
+              <label for="edit_session_date" class="form-label">Session Date *</label>
+              <input 
+                type="date" 
+                class="form-control" 
+                id="edit_session_date" 
+                formControlName="session_date"
+                [class.is-invalid]="isFieldInvalid('session_date')"
+              >
+              <div class="invalid-feedback" *ngIf="isFieldInvalid('session_date')">
+                Please select a session date.
+              </div>
+            </div>
+
+            <!-- Session Type -->
+            <div class="col-md-6">
+              <label for="edit_session_type" class="form-label">Session Type *</label>
+              <select 
+                class="form-select" 
+                id="edit_session_type" 
+                formControlName="session_type"
+                [class.is-invalid]="isFieldInvalid('session_type')"
+              >
+                <option *ngFor="let type of sessionTypes" [value]="type.value">
+                  {{ type.label }}
+                </option>
+              </select>
+            </div>
+
+            <!-- Start Time -->
+            <div class="col-md-6">
+              <label for="edit_start_time" class="form-label">Start Time</label>
+              <input 
+                type="time" 
+                class="form-control" 
+                id="edit_start_time" 
+                formControlName="start_time"
+              >
+            </div>
+
+            <!-- End Time -->
+            <div class="col-md-6">
+              <label for="edit_end_time" class="form-label">End Time</label>
+              <input 
+                type="time" 
+                class="form-control" 
+                id="edit_end_time" 
+                formControlName="end_time"
+              >
+            </div>
+
+            <!-- Max Participants -->
+            <div class="col-md-6">
+              <label for="edit_max_participants" class="form-label">Max Participants</label>
+              <input 
+                type="number" 
+                class="form-control" 
+                id="edit_max_participants" 
+                formControlName="max_participants"
+                min="1"
+                max="50"
+              >
+            </div>
+
+            <!-- Mandatory -->
+            <div class="col-md-6 d-flex align-items-end">
+              <div class="form-check">
+                <input 
+                  class="form-check-input" 
+                  type="checkbox" 
+                  id="edit_is_mandatory" 
+                  formControlName="is_mandatory"
+                >
+                <label class="form-check-label" for="edit_is_mandatory">
+                  <strong>Mandatory Session</strong>
+                </label>
+              </div>
+            </div>
+
+            <!-- Description -->
+            <div class="col-12">
+              <label for="edit_description" class="form-label">Description</label>
+              <textarea 
+                class="form-control" 
+                id="edit_description" 
+                formControlName="description"
+                rows="3"
+              ></textarea>
+            </div>
+
+            <!-- Objectives -->
+            <div class="col-12">
+              <label for="edit_objectives" class="form-label">Objectives</label>
+              <textarea 
+                class="form-control" 
+                id="edit_objectives" 
+                formControlName="objectives"
+                rows="2"
+              ></textarea>
+            </div>
+
+            <!-- Drills -->
+            <div class="col-md-6">
+              <label for="edit_drills" class="form-label">Drills</label>
+              <textarea 
+                class="form-control" 
+                id="edit_drills" 
+                formControlName="drills"
+                rows="3"
+              ></textarea>
+            </div>
+
+            <!-- Equipment -->
+            <div class="col-md-6">
+              <label for="edit_equipment_needed" class="form-label">Equipment Needed</label>
+              <textarea 
+                class="form-control" 
+                id="edit_equipment_needed" 
+                formControlName="equipment_needed"
+                rows="3"
+              ></textarea>
+            </div>
+
+            <!-- Weather Conditions -->
+            <div class="col-md-6">
+              <label for="edit_weather_conditions" class="form-label">Weather Conditions</label>
+              <input 
+                type="text" 
+                class="form-control" 
+                id="edit_weather_conditions" 
+                formControlName="weather_conditions"
+              >
+            </div>
+
+            <!-- Notes -->
+            <div class="col-12">
+              <label for="edit_notes" class="form-label">Additional Notes</label>
+              <textarea 
+                class="form-control" 
+                id="edit_notes" 
+                formControlName="notes"
+                rows="2"
+              ></textarea>
+            </div>
+          </div>
+
+          <!-- Error Message -->
+          <div *ngIf="error" class="alert alert-danger mt-3">
+            <i class="fas fa-exclamation-triangle me-2"></i>{{ error }}
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" (click)="closeEditModal()">
+            <i class="fas fa-times me-2"></i>Cancel
+          </button>
+          <button 
+            type="submit" 
+            class="btn btn-primary"
+            [disabled]="isSubmitting || sessionForm.invalid"
+          >
+            <span *ngIf="isSubmitting" class="spinner-border spinner-border-sm me-2"></span>
+            <i *ngIf="!isSubmitting" class="fas fa-save me-2"></i>
+            {{ isSubmitting ? 'Updating...' : 'Update Session' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" [class.show]="showDeleteModal" [style.display]="showDeleteModal ? 'block' : 'none'" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header bg-danger text-white">
+        <h5 class="modal-title">
+          <i class="fas fa-trash me-2"></i>Confirm Delete
+        </h5>
+        <button type="button" class="btn-close btn-close-white" (click)="closeDeleteModal()"></button>
+      </div>
+      <div class="modal-body">
+        <div class="text-center">
+          <i class="fas fa-exclamation-triangle fa-3x text-warning mb-3"></i>
+          <h5>Are you sure you want to delete this training session?</h5>
+      <div *ngIf="sessionToDelete" class="mt-3">
+           <div class="alert alert-light">
+             <strong>Title:</strong> {{ sessionToDelete.title }}<br>
+             <strong>Date:</strong> {{ formatDate(sessionToDelete.session_date) }}<br>
+             <strong>Type:</strong> {{ getSessionTypeLabel(sessionToDelete.session_type) }}
+           </div>
+         </div>
+         <p class="text-muted">This action cannot be undone.</p>
+       </div>
+     </div>
+     <div class="modal-footer">
+       <button type="button" class="btn btn-secondary" (click)="closeDeleteModal()">
+         <i class="fas fa-times me-2"></i>Cancel
+       </button>
+       <button type="button" class="btn btn-danger" (click)="deleteSession()">
+         <i class="fas fa-trash me-2"></i>Delete Session
+       </button>
+     </div>
+   </div>
+ </div>
+</div>
+
+<!-- Mark Attendance for Session Modal -->
+<div class="modal fade" [class.show]="showAttendanceModal" [style.display]="showAttendanceModal ? 'block' : 'none'" tabindex="-1">
+ <div class="modal-dialog modal-lg">
+   <div class="modal-content">
+     <div class="modal-header bg-success text-white">
+       <h5 class="modal-title">
+         <i class="fas fa-clipboard-check me-2"></i>Mark Attendance - {{ selectedSessionForAttendance?.title }}
+       </h5>
+       <button type="button" class="btn-close btn-close-white" (click)="closeAttendanceModal()"></button>
+     </div>
+     <form [formGroup]="attendanceForm" (ngSubmit)="createSessionAttendance()">
+       <div class="modal-body">
+         <!-- Session Info -->
+         <div class="alert alert-info" *ngIf="selectedSessionForAttendance">
+           <div class="row">
+             <div class="col-md-6">
+               <strong>Session:</strong> {{ selectedSessionForAttendance.title }}
+             </div>
+             <div class="col-md-6">
+               <strong>Date:</strong> {{ formatDate(selectedSessionForAttendance.session_date) }}
+             </div>
+           </div>
+           <div class="row mt-2">
+             <div class="col-md-6">
+               <strong>Type:</strong> {{ getSessionTypeLabel(selectedSessionForAttendance.session_type) }}
+             </div>
+             <div class="col-md-6">
+               <strong>Time:</strong> 
+               <span *ngIf="selectedSessionForAttendance.start_time">
+                 {{ formatTime(selectedSessionForAttendance.start_time) }}
+               </span>
+               <span *ngIf="selectedSessionForAttendance.end_time">
+                 - {{ formatTime(selectedSessionForAttendance.end_time) }}
+               </span>
+               <span *ngIf="!selectedSessionForAttendance.start_time">Not specified</span>
+             </div>
+           </div>
+         </div>
+
+         <!-- Default Status Selection -->
+         <div class="row g-3 mb-4">
+           <div class="col-md-6">
+             <label for="default_status" class="form-label">Default Status *</label>
+             <select class="form-select" id="default_status" formControlName="default_status">
+               <option value="present">✅ Present</option>
+               <option value="absent">❌ Absent</option>
+               <option value="late">⏰ Late</option>
+               <option value="excused">ℹ️ Excused</option>
+             </select>
+             <small class="form-text text-muted">This status will be applied to all selected players.</small>
+           </div>
+           <div class="col-md-6 d-flex align-items-end">
+             <div class="form-check">
+               <input 
+                 class="form-check-input" 
+                 type="checkbox" 
+                 id="selectAllSessionPlayers"
+                 (change)="toggleSelectAllPlayers($event)"
+               >
+               <label class="form-check-label" for="selectAllSessionPlayers">
+                 <strong>Select All Players ({{ players.length }})</strong>
+               </label>
+             </div>
+           </div>
+         </div>
+
+         <!-- Player Selection -->
+         <div class="card">
+           <div class="card-header">
+             <h6 class="mb-0">
+               <i class="fas fa-users me-2"></i>
+               Select Players for Attendance
+               <span class="badge bg-primary ms-2">{{ selectedPlayerIds.length }} selected</span>
+             </h6>
+           </div>
+           <div class="card-body" style="max-height: 300px; overflow-y: auto;">
+             <div class="row">
+            <div class="col-md-6 mb-2" *ngFor="let player of players">
+                  <div class="form-check">
+                    <input 
+                      class="form-check-input" 
+                      type="checkbox" 
+                      [id]="'session-player-' + player.id"
+                      [checked]="selectedPlayerIds.includes(player.id)"
+                      (change)="togglePlayerSelection(player.id, $event)"
+                    >
+                    <label class="form-check-label" [for]="'session-player-' + player.id">
+                      <div class="d-flex align-items-center">
+                        <div class="me-2">
+                          <i class="fas fa-user-circle text-primary"></i>
+                        </div>
+                        <div>
+                          <div class="fw-bold">{{ player.first_name }} {{ player.last_name }}</div>
+                          <small class="text-muted">{{ player.position || 'Player' }}</small>
+                        </div>
+                      </div>
+                    </label>
+                  </div>
+                </div>
+             </div>
+             
+             <!-- No players message -->
+             <div *ngIf="players.length === 0" class="text-center py-4">
+               <i class="fas fa-users fa-3x text-muted mb-3"></i>
+               <h6 class="text-muted">No players available</h6>
+               <p class="text-muted">Please add players to the system first.</p>
+             </div>
+           </div>
+           <div class="card-footer">
+             <small class="text-muted">
+               <i class="fas fa-info-circle me-1"></i>
+               Selected: <strong>{{ selectedPlayerIds.length }}</strong> of <strong>{{ players.length }}</strong> players
+               <span *ngIf="selectedPlayerIds.length > 0" class="text-success ms-2">
+                 <i class="fas fa-check me-1"></i>Ready to mark attendance
+               </span>
+             </small>
+           </div>
+         </div>
+
+         <!-- Error Message -->
+         <div *ngIf="error" class="alert alert-danger mt-3">
+           <i class="fas fa-exclamation-triangle me-2"></i>{{ error }}
+         </div>
+       </div>
+       <div class="modal-footer">
+         <button type="button" class="btn btn-secondary" (click)="closeAttendanceModal()">
+           <i class="fas fa-times me-2"></i>Cancel
+         </button>
+         <button 
+           type="submit" 
+           class="btn btn-success"
+           [disabled]="isSubmitting || selectedPlayerIds.length === 0"
+         >
+           <span *ngIf="isSubmitting" class="spinner-border spinner-border-sm me-2"></span>
+           <i *ngIf="!isSubmitting" class="fas fa-clipboard-check me-2"></i>
+           <span *ngIf="isSubmitting">Creating Attendance...</span>
+           <span *ngIf="!isSubmitting">Mark Attendance ({{ selectedPlayerIds.length }})</span>
+         </button>
+       </div>
+     </form>
+   </div>
+ </div>
+</div>
+
+<!-- View Session Attendance Modal -->
+<!-- View Session Attendance Modal -->
+<div class="modal fade" [class.show]="showSessionAttendanceModal" [style.display]="showSessionAttendanceModal ? 'block' : 'none'" tabindex="-1">
+  <div class="modal-dialog modal-xl">
+    <div class="modal-content">
+      <div class="modal-header bg-info text-white">
+        <h5 class="modal-title">
+          <i class="fas fa-chart-bar me-2"></i>Session Attendance Report - {{ selectedSessionForAttendance?.title }}
+        </h5>
+        <button type="button" class="btn-close btn-close-white" (click)="closeSessionAttendanceModal()"></button>
+      </div>
+      <div class="modal-body">
+        <!-- Session Details Banner -->
+        <div class="alert alert-primary border-0" *ngIf="selectedSessionForAttendance">
+          <div class="row align-items-center">
+            <div class="col-md-8">
+              <h6 class="alert-heading mb-2">
+                <i [class]="getSessionTypeIcon(selectedSessionForAttendance.session_type) + ' me-2'"></i>
+                {{ selectedSessionForAttendance.title }}
+              </h6>
+              <div class="row">
+                <div class="col-md-3">
+                  <small><strong>Date:</strong> {{ formatDate(selectedSessionForAttendance.session_date) }}</small>
+                </div>
+                <div class="col-md-3">
+                  <small><strong>Type:</strong> {{ getSessionTypeLabel(selectedSessionForAttendance.session_type) }}</small>
+                </div>
+                <div class="col-md-3">
+                  <small>
+                    <strong>Time:</strong> 
+                    <span *ngIf="selectedSessionForAttendance.start_time">
+                      {{ formatTime(selectedSessionForAttendance.start_time) }}
+                    </span>
+                    <span *ngIf="selectedSessionForAttendance.end_time">
+                      - {{ formatTime(selectedSessionForAttendance.end_time) }}
+                    </span>
+                    <span *ngIf="!selectedSessionForAttendance.start_time">Not specified</span>
+                  </small>
+                </div>
+                <div class="col-md-3">
+                  <small><strong>Coach:</strong> {{ selectedSessionForAttendance.created_by_name || 'Unknown' }}</small>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-4 text-end">
+              <button class="btn btn-success btn-sm" (click)="openAttendanceModal(selectedSessionForAttendance)">
+                <i class="fas fa-plus me-1"></i>Mark More Attendance
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Attendance Statistics Cards -->
+        <div class="row mb-4" *ngIf="sessionAttendanceStats">
+          <div class="col-md-2 mb-2">
+            <div class="card text-center border-primary">
+              <div class="card-body py-2">
+                <div class="h4 text-primary mb-0">{{ sessionAttendanceStats.total_marked }}</div>
+                <small class="text-muted">Total Marked</small>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-2 mb-2">
+            <div class="card text-center border-success">
+              <div class="card-body py-2">
+                <div class="h4 text-success mb-0">{{ sessionAttendanceStats.present }}</div>
+                <small class="text-muted">Present</small>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-2 mb-2">
+            <div class="card text-center border-danger">
+              <div class="card-body py-2">
+                <div class="h4 text-danger mb-0">{{ sessionAttendanceStats.absent }}</div>
+                <small class="text-muted">Absent</small>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-2 mb-2">
+            <div class="card text-center border-warning">
+              <div class="card-body py-2">
+                <div class="h4 text-warning mb-0">{{ sessionAttendanceStats.late }}</div>
+                <small class="text-muted">Late</small>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-2 mb-2">
+            <div class="card text-center border-info">
+              <div class="card-body py-2">
+                <div class="h4 text-info mb-0">{{ sessionAttendanceStats.excused }}</div>
+                <small class="text-muted">Excused</small>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-2 mb-2">
+            <div class="card text-center border-secondary">
+              <div class="card-body py-2">
+                <div class="h4 text-secondary mb-0">{{ sessionAttendanceStats.attendance_rate }}%</div>
+                <small class="text-muted">Attendance Rate</small>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Main Content Row -->
+        <div class="row">
+          <!-- Attendance Records Table -->
+          <div class="col-md-8">
+            <div class="card">
+              <div class="card-header bg-light">
+                <div class="d-flex justify-content-between align-items-center">
+                  <h6 class="mb-0">
+                    <i class="fas fa-list me-2"></i>Attendance Records
+                  </h6>
+                  <span class="badge bg-primary">{{ sessionAttendance.length }} Records</span>
+                </div>
+              </div>
+              
+              <!-- Attendance Table -->
+              <div class="card-body p-0" *ngIf="sessionAttendance.length > 0">
+                <div class="table-responsive">
+                  <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                      <tr>
+                        <th>Player</th>
+                        <th>Status</th>
+                        <th>Check-in</th>
+                        <th>Check-out</th>
+                        <th>Duration</th>
+                        <th>Notes</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr *ngFor="let record of sessionAttendance" 
+                          [class]="record.status === 'absent' ? 'table-light' : ''">
+                       <td>
+                            <div class="d-flex align-items-center">
+                              <i class="fas fa-user-circle text-primary me-2"></i>
+                              <div>
+                                <div class="fw-bold">{{ record.player_name }}</div>
+                                <small class="text-muted">{{ record.position || 'Player' }}</small>
+                              </div>
+                            </div>
+                        </td>
+                        <td>
+                          <span [class]="'badge bg-' + getStatusColor(record.status)">
+                            <i class="fas fa-circle me-1"></i>
+                            {{ getStatusLabel(record.status) }}
+                          </span>
+                        </td>
+                        <td>
+                          <span *ngIf="record.check_in_time" class="text-success">
+                            <i class="fas fa-sign-in-alt me-1"></i>
+                            {{ formatTime(record.check_in_time) }}
+                          </span>
+                          <span *ngIf="!record.check_in_time" class="text-muted">-</span>
+                        </td>
+                        <td>
+                          <span *ngIf="record.check_out_time" class="text-danger">
+                            <i class="fas fa-sign-out-alt me-1"></i>
+                            {{ formatTime(record.check_out_time) }}
+                          </span>
+                          <span *ngIf="!record.check_out_time" class="text-muted">-</span>
+                        </td>
+                        <td>
+                          <span *ngIf="record.duration_minutes" class="badge bg-info">
+                            <i class="fas fa-clock me-1"></i>
+                            {{ record.duration_minutes }} min
+                          </span>
+                          <span *ngIf="!record.duration_minutes" class="text-muted">-</span>
+                        </td>
+                        <td>
+                          <small class="text-muted">{{ record.notes || '-' }}</small>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+              
+              <!-- No Attendance Message -->
+              <div class="card-body text-center py-5" *ngIf="sessionAttendance.length === 0">
+                <i class="fas fa-clipboard-list fa-4x text-muted mb-3"></i>
+                <h5 class="text-muted">No attendance marked yet</h5>
+                <p class="text-muted">Click "Mark Attendance" to start tracking attendance for this session.</p>
+             <button class="btn btn-success" (click)="openAttendanceModal(selectedSessionForAttendance)">
+                 <i class="fas fa-clipboard-check me-2"></i>Mark Attendance
+               </button>
+             </div>
+           </div>
+         </div>
+
+         <!-- Sidebar: Unmarked Players & Quick Stats -->
+         <div class="col-md-4">
+           <!-- Unmarked Players Card -->
+           <div class="card mb-3">
+             <div class="card-header bg-warning text-dark">
+               <div class="d-flex justify-content-between align-items-center">
+                 <h6 class="mb-0">
+                   <i class="fas fa-user-clock me-2"></i>Not Yet Marked
+                 </h6>
+                 <span class="badge bg-dark">{{ unmarkedPlayers.length }}</span>
+               </div>
+             </div>
+             
+             <div class="card-body" *ngIf="unmarkedPlayers.length > 0" style="max-height: 300px; overflow-y: auto;">
+               <div class="list-group list-group-flush">
+                 <div class="list-group-item border-0 px-0 py-2" *ngFor="let player of unmarkedPlayers">
+                   <div class="d-flex align-items-center justify-content-between">
+                     <div class="d-flex align-items-center">
+                       <i class="fas fa-user-circle text-muted me-2"></i>
+                       <div>
+                         <div class="fw-bold small">{{ player.first_name }} {{ player.last_name }}</div>
+                         <small class="text-muted">{{ player.position || 'Player' }}</small>
+                       </div>
+                     </div>
+                     <i class="fas fa-question-circle text-warning" title="Not marked"></i>
+                   </div>
+                 </div>
+               </div>
+             </div>
+             
+             <div class="card-body text-center py-4" *ngIf="unmarkedPlayers.length === 0">
+               <i class="fas fa-check-circle fa-3x text-success mb-3"></i>
+               <h6 class="text-success">All Players Marked!</h6>
+               <p class="text-muted small mb-0">Every player's attendance has been recorded for this session.</p>
+             </div>
+           </div>
+
+           <!-- Quick Summary Card -->
+           <div class="card">
+             <div class="card-header bg-info text-white">
+               <h6 class="mb-0">
+                 <i class="fas fa-chart-pie me-2"></i>Quick Summary
+               </h6>
+             </div>
+             <div class="card-body">
+               <div *ngIf="sessionAttendanceStats">
+                 <!-- Attendance Rate Progress -->
+                 <div class="mb-3">
+                   <div class="d-flex justify-content-between mb-1">
+                     <small class="text-muted">Attendance Rate</small>
+                     <small class="fw-bold">{{ sessionAttendanceStats.attendance_rate }}%</small>
+                   </div>
+                   <div class="progress" style="height: 8px;">
+                     <div class="progress-bar" 
+                          [class]="sessionAttendanceStats.attendance_rate >= 80 ? 'bg-success' : (sessionAttendanceStats.attendance_rate >= 60 ? 'bg-warning' : 'bg-danger')"
+                          [style.width.%]="sessionAttendanceStats.attendance_rate">
+                     </div>
+                   </div>
+                 </div>
+
+                 <!-- Status Breakdown -->
+                 <div class="row text-center">
+                   <div class="col-6 mb-2">
+                     <div class="border rounded p-2">
+                       <div class="h6 text-success mb-0">{{ sessionAttendanceStats.present }}</div>
+                       <small class="text-muted">Present</small>
+                     </div>
+                   </div>
+                   <div class="col-6 mb-2">
+                     <div class="border rounded p-2">
+                       <div class="h6 text-danger mb-0">{{ sessionAttendanceStats.absent }}</div>
+                       <small class="text-muted">Absent</small>
+                     </div>
+                   </div>
+                   <div class="col-6">
+                     <div class="border rounded p-2">
+                       <div class="h6 text-warning mb-0">{{ sessionAttendanceStats.late }}</div>
+                       <small class="text-muted">Late</small>
+                     </div>
+                   </div>
+                   <div class="col-6">
+                     <div class="border rounded p-2">
+                       <div class="h6 text-info mb-0">{{ sessionAttendanceStats.excused }}</div>
+                       <small class="text-muted">Excused</small>
+                     </div>
+                   </div>
+                 </div>
+
+                 <!-- Performance Indicator -->
+                 <div class="mt-3 text-center">
+                   <div *ngIf="sessionAttendanceStats.attendance_rate >= 90" class="text-success">
+                     <i class="fas fa-trophy fa-2x mb-2"></i>
+                     <div class="fw-bold">Excellent Attendance!</div>
+                     <small>{{ sessionAttendanceStats.attendance_rate }}% attendance rate</small>
+                   </div>
+                   <div *ngIf="sessionAttendanceStats.attendance_rate >= 70 && sessionAttendanceStats.attendance_rate < 90" class="text-warning">
+                     <i class="fas fa-thumbs-up fa-2x mb-2"></i>
+                     <div class="fw-bold">Good Attendance</div>
+                     <small>{{ sessionAttendanceStats.attendance_rate }}% attendance rate</small>
+                   </div>
+                   <div *ngIf="sessionAttendanceStats.attendance_rate < 70" class="text-danger">
+                     <i class="fas fa-exclamation-triangle fa-2x mb-2"></i>
+                     <div class="fw-bold">Needs Attention</div>
+                     <small>{{ sessionAttendanceStats.attendance_rate }}% attendance rate</small>
+                   </div>
+                 </div>
+               </div>
+
+               <!-- No Stats Message -->
+               <div *ngIf="!sessionAttendanceStats" class="text-center py-3">
+                 <i class="fas fa-chart-bar fa-2x text-muted mb-2"></i>
+                 <div class="text-muted">No statistics available</div>
+               </div>
+             </div>
+           </div>
+         </div>
+       </div>
+
+       <!-- Additional Session Info -->
+       <div class="row mt-4" *ngIf="selectedSessionForAttendance">
+         <div class="col-12">
+           <div class="card">
+             <div class="card-header bg-light">
+               <h6 class="mb-0">
+                 <i class="fas fa-info-circle me-2"></i>Session Details
+               </h6>
+             </div>
+             <div class="card-body">
+               <div class="row">
+                 <div class="col-md-6" *ngIf="selectedSessionForAttendance.objectives">
+                   <strong>Objectives:</strong>
+                   <p class="text-muted mb-2">{{ selectedSessionForAttendance.objectives }}</p>
+                 </div>
+                 <div class="col-md-6" *ngIf="selectedSessionForAttendance.equipment_needed">
+                   <strong>Equipment:</strong>
+                   <p class="text-muted mb-2">{{ selectedSessionForAttendance.equipment_needed }}</p>
+                 </div>
+                 <div class="col-md-6" *ngIf="selectedSessionForAttendance.max_participants">
+                   <strong>Max Participants:</strong>
+                   <p class="text-muted mb-2">{{ selectedSessionForAttendance.max_participants }} players</p>
+                 </div>
+                 <div class="col-md-6" *ngIf="selectedSessionForAttendance.weather_conditions">
+                   <strong>Weather:</strong>
+                   <p class="text-muted mb-2">{{ selectedSessionForAttendance.weather_conditions }}</p>
+                 </div>
+                 <div class="col-12" *ngIf="selectedSessionForAttendance.notes">
+                   <strong>Notes:</strong>
+                   <p class="text-muted mb-0">{{ selectedSessionForAttendance.notes }}</p>
+                 </div>
+               </div>
+             </div>
+           </div>
+         </div>
+       </div>
+     </div>
+     
+     <div class="modal-footer bg-light">
+       <div class="d-flex justify-content-between w-100">
+         <div>
+           <button type="button" class="btn btn-secondary" (click)="closeSessionAttendanceModal()">
+             <i class="fas fa-times me-2"></i>Close
+           </button>
+         </div>
+         <div>
+           <button type="button" class="btn btn-outline-primary me-2" onclick="window.print()">
+             <i class="fas fa-print me-2"></i>Print Report
+           </button>
+           <button type="button" class="btn btn-success" (click)="openAttendanceModal(selectedSessionForAttendance)">
+             <i class="fas fa-plus me-2"></i>Mark More Attendance
+           </button>
+         </div>
+       </div>
+     </div>
+   </div>
+ </div>
+</div>
+
+<!-- Modal Backdrop -->
+<div class="modal-backdrop fade show" 
+    *ngIf="showAddModal || showEditModal || showDeleteModal || showAttendanceModal || showSessionAttendanceModal">
+</div>

@@ -1,0 +1,1346 @@
+<div class="container-fluid">
+  <div class="row">
+    <!-- Sidebar -->
+    <nav class="col-md-3 col-lg-2 d-md-block sidebar collapse" style="background-color: #2c5530; min-height: 100vh;">
+      <div class="position-sticky pt-3">
+        <div class="text-center mb-4">
+          <h5 class="text-white">
+            <i class="fas fa-futbol me-2"></i>Soccer Academy
+          </h5>
+        </div>
+
+        <ul class="nav flex-column">
+          <li class="nav-item">
+            <a class="nav-link text-white" [routerLink]="['/dashboard']">
+              <i class="fas fa-tachometer-alt me-2"></i>Dashboard
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link text-white" [routerLink]="['/users']">
+              <i class="fas fa-users me-2"></i>User Management
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link text-white" [routerLink]="['/players']">
+              <i class="fas fa-user-graduate me-2"></i>Players
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link text-white" [routerLink]="['/teams']">
+              <i class="fas fa-users-cog me-2"></i>Teams
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link text-white" [routerLink]="['/valuations']">
+              <i class="fas fa-chart-line me-2"></i>Player Valuation
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link text-white" [routerLink]="['/training-sessions']">
+              <i class="fas fa-dumbbell me-2"></i>Training Sessions
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link text-white" [routerLink]="['/fields']">
+              <i class="fas fa-map-marked-alt me-2"></i>Field Management
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link text-white active" [routerLink]="['/payments']" 
+               style="background-color: #5cb85c; border-radius: 0.375rem;">
+              <i class="fas fa-credit-card me-2"></i>Payment Management
+            </a>
+          </li>
+        </ul>
+
+        <hr class="text-white">
+
+        <ul class="nav flex-column">
+          <li class="nav-item">
+            <a class="nav-link text-white" href="#" (click)="logout()">
+              <i class="fas fa-sign-out-alt me-2"></i>Logout
+            </a>
+          </li>
+        </ul>
+      </div>
+    </nav>
+
+    <!-- Main content -->
+    <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+      <!-- Header -->
+      <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <h1 class="h2">
+          <i class="fas fa-credit-card me-2 text-success"></i>
+          Payment Management
+        </h1>
+        <div class="btn-toolbar">
+          <!-- View Mode Toggle -->
+          <div class="btn-group me-2" role="group">
+          <button 
+              type="button" 
+              [class]="'btn btn-outline-secondary' + (viewMode === 'cards' ? ' active' : '')"
+              (click)="onViewModeChange('cards')">
+              <i class="fas fa-th"></i>
+            </button>
+            <button 
+              type="button" 
+              [class]="'btn btn-outline-secondary' + (viewMode === 'list' ? ' active' : '')"
+              (click)="onViewModeChange('list')">
+              <i class="fas fa-list"></i>
+            </button>
+            <button 
+              type="button" 
+              [class]="'btn btn-outline-secondary' + (viewMode === 'summary' ? ' active' : '')"
+              (click)="onViewModeChange('summary')">
+              <i class="fas fa-chart-bar"></i>
+            </button>
+          </div>
+          
+          <!-- Action Buttons -->
+          <div class="btn-group">
+            <button type="button" class="btn btn-success" (click)="openAddPaymentModal()">
+              <i class="fas fa-plus me-2"></i>Add Payment
+            </button>
+            <button type="button" class="btn btn-primary" (click)="showBulkPaymentModal = true">
+              <i class="fas fa-users me-2"></i>Bulk Payment
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Statistics Cards -->
+      <div class="row mb-4" *ngIf="stats">
+        <div class="col-md-2">
+          <div class="card border-0 shadow-sm text-center payment-stat-card">
+            <div class="card-body">
+              <div class="h3 text-primary mb-0">{{ stats.total_payments }}</div>
+              <small class="text-muted">Total Payments</small>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-2">
+          <div class="card border-0 shadow-sm text-center payment-stat-card">
+            <div class="card-body">
+              <div class="h3 text-success mb-0">{{ stats.paid_payments }}</div>
+              <small class="text-muted">Paid</small>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-2">
+          <div class="card border-0 shadow-sm text-center payment-stat-card">
+            <div class="card-body">
+              <div class="h3 text-warning mb-0">{{ stats.pending_payments }}</div>
+              <small class="text-muted">Pending</small>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-2">
+          <div class="card border-0 shadow-sm text-center payment-stat-card">
+            <div class="card-body">
+              <div class="h3 text-danger mb-0">{{ stats.overdue_payments }}</div>
+              <small class="text-muted">Overdue</small>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-2">
+          <div class="card border-0 shadow-sm text-center payment-stat-card">
+            <div class="card-body">
+              <div class="h3 text-info mb-0">{{ formatCurrency(stats.total_revenue) }}</div>
+              <small class="text-muted">Total Revenue</small>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-2">
+          <div class="card border-0 shadow-sm text-center payment-stat-card">
+            <div class="card-body">
+              <div class="h3 text-secondary mb-0">{{ formatCurrency(stats.monthly_revenue) }}</div>
+              <small class="text-muted">This Month</small>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Search and Filter Section -->
+      <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body">
+          <div class="row g-3">
+            <div class="col-md-3">
+              <label for="searchInput" class="form-label">Search Payments</label>
+              <div class="input-group">
+                <span class="input-group-text">
+                  <i class="fas fa-search"></i>
+                </span>
+              <input 
+                type="text" 
+                class="form-control" 
+                id="searchInput"
+                placeholder="Search by name, location, facilities..."
+                [(ngModel)]="searchTerm"
+                (input)="onSearchChange()"
+              >
+              </div>
+            </div>
+            <div class="col-md-2">
+              <label for="statusFilter" class="form-label">Status</label>
+            <select 
+              class="form-select" 
+              id="statusFilter" 
+              [(ngModel)]="selectedStatus" 
+              (change)="onFilterChange()"
+            >
+              <option value="">All Status</option>
+              <option *ngFor="let status of paymentStatuses" [value]="status.value">
+                {{ status.label }}
+              </option>
+            </select>
+            </div>
+            <div class="col-md-2">
+              <label for="categoryFilter" class="form-label">Category</label>
+            <select 
+                class="form-select" 
+                id="categoryFilter" 
+                [(ngModel)]="selectedCategory" 
+                (change)="onFilterChange()"
+              >
+                <option value="">All Categories</option>
+                <option *ngFor="let category of categories" [value]="category.id">
+                  {{ category.name }}
+                </option>
+              </select>
+            </div>
+            <div class="col-md-2">
+              <label for="paymentMethodFilter" class="form-label">Method</label>
+              <select class="form-select" id="paymentMethodFilter" [(ngModel)]="selectedPaymentMethod" (change)="onFilterChange()">
+                <option value="">All Methods</option>
+                <option *ngFor="let method of paymentMethods" [value]="method.value">
+                  {{ method.label }}
+                </option>
+              </select>
+            </div>
+            <div class="col-md-2">
+              <label for="startDate" class="form-label">From Date</label>
+              <input 
+                type="date" 
+                class="form-control" 
+                id="startDate"
+                [(ngModel)]="startDate"
+                (change)="onFilterChange()"
+              >
+            </div>
+            <div class="col-md-1">
+              <label class="form-label">&nbsp;</label>
+              <div>
+                <button type="button" class="btn btn-outline-secondary w-100" (click)="clearFilters()">
+                  <i class="fas fa-times"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+          <div class="row g-3 mt-1">
+            <div class="col-md-2">
+              <input 
+                type="date" 
+                class="form-control" 
+                placeholder="To Date"
+                [(ngModel)]="endDate"
+                (change)="onFilterChange()"
+              >
+            </div>
+            <div class="col-md-2">
+              <div class="form-check mt-2">
+                <input 
+                  class="form-check-input" 
+                  type="checkbox" 
+                  id="overdueOnly"
+                  [(ngModel)]="overdueOnly"
+                  (change)="onFilterChange()"
+                >
+                <label class="form-check-label" for="overdueOnly">
+                  Overdue Only
+                </label>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Success/Error Messages -->
+      <div *ngIf="successMessage" class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="fas fa-check-circle me-2"></i>{{ successMessage }}
+        <button type="button" class="btn-close" (click)="successMessage = ''"></button>
+      </div>
+
+      <div *ngIf="error" class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="fas fa-exclamation-triangle me-2"></i>{{ error }}
+        <button type="button" class="btn-close" (click)="error = ''"></button>
+      </div>
+
+      <!-- Loading -->
+      <div *ngIf="isLoading" class="text-center py-5">
+        <div class="spinner-border text-success" role="status">
+          <span class="visually-hidden">Loading...</span>
+        </div>
+        <p class="mt-2">Loading payments...</p>
+      </div>
+
+      <!-- Cards View -->
+      <div *ngIf="viewMode === 'cards' && !isLoading">
+        <div class="row" *ngIf="payments.length > 0">
+          <div class="col-md-6 col-lg-4 mb-4" *ngFor="let payment of payments">
+            <div class="card h-100 shadow-sm border-0 payment-card">
+              <div class="card-header" [class]="'bg-' + getStatusColor(payment.status) + ' text-white'">
+                <div class="d-flex justify-content-between align-items-center">
+                  <div>
+                    <h6 class="mb-0 fw-bold">
+                      <i [class]="getStatusIcon(payment.status) + ' me-2'"></i>
+                      {{ payment.player_name || 'Unknown Player' }}
+                    </h6>
+                    <small>{{ getCategoryName(payment.category_id) }}</small>
+                  </div>
+                  <div class="dropdown">
+                    <button class="btn btn-sm btn-light dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                      <i class="fas fa-ellipsis-v"></i>
+                    </button>
+                    <ul class="dropdown-menu">
+                      <li *ngIf="payment.status === 'pending' || payment.status === 'overdue'">
+                        <a class="dropdown-item" href="#" (click)="openPaymentModal(payment); $event.preventDefault()">
+                          <i class="fas fa-check me-2"></i>Mark as Paid
+                        </a>
+                      </li>
+                      <li>
+                        <a class="dropdown-item" href="#" (click)="openEditModal(payment); $event.preventDefault()">
+                          <i class="fas fa-edit me-2"></i>Edit Payment
+                        </a>
+                      </li>
+                      <li><hr class="dropdown-divider"></li>
+                      <li *ngIf="payment.status !== 'paid'">
+                        <a class="dropdown-item text-danger" href="#" (click)="openDeleteModal(payment); $event.preventDefault()">
+                          <i class="fas fa-trash me-2"></i>Delete Payment
+                        </a>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="card-body">
+                <!-- Payment Amount -->
+                <div class="text-center mb-3">
+                  <div class="h3 text-primary mb-0">{{ formatCurrency(payment.total_amount || payment.amount) }}</div>
+                  <small class="text-muted" *ngIf="payment.discount_amount > 0">
+                    Original: {{ formatCurrency(payment.amount) }}
+                    <span class="badge bg-success ms-1">-{{ formatCurrency(payment.discount_amount) }}</span>
+                  </small>
+                  <div *ngIf="payment.late_fee > 0" class="text-warning small">
+                    <i class="fas fa-exclamation-triangle me-1"></i>
+                    Late Fee: {{ formatCurrency(payment.late_fee) }}
+                  </div>
+                </div>
+
+                <!-- Payment Details -->
+                <div class="mb-3">
+                  <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span class="text-muted small">Due Date:</span>
+                    <span class="fw-bold" [class]="payment.status === 'overdue' ? 'text-danger' : ''">
+                      {{ formatDate(payment.due_date) }}
+                    </span>
+                  </div>
+                  <div *ngIf="payment.paid_date" class="d-flex justify-content-between align-items-center mb-2">
+                    <span class="text-muted small">Paid Date:</span>
+                    <span class="text-success fw-bold">{{ formatDate(payment.paid_date) }}</span>
+                  </div>
+                  <div *ngIf="payment.payment_method" class="d-flex justify-content-between align-items-center mb-2">
+                    <span class="text-muted small">Method:</span>
+                    <span>
+                      <i [class]="getPaymentMethodIcon(payment.payment_method) + ' me-1'"></i>
+                      {{ getPaymentMethodLabel(payment.payment_method) }}
+                    </span>
+                  </div>
+                  <div *ngIf="payment.transaction_id" class="d-flex justify-content-between align-items-center mb-2">
+                    <span class="text-muted small">Transaction:</span>
+                    <span class="small text-monospace">{{ payment.transaction_id }}</span>
+                  </div>
+                </div>
+
+                <!-- Overdue Alert -->
+                <div *ngIf="payment.status === 'overdue'" class="alert alert-warning py-2 mb-3">
+                  <i class="fas fa-clock me-1"></i>
+                  <strong>{{ getDaysOverdue(payment) }} days overdue</strong>
+                </div>
+
+                <!-- Notes -->
+                <div *ngIf="payment.notes" class="mb-3">
+                  <small class="text-muted">Notes:</small>
+                  <p class="small mb-0">{{ payment.notes }}</p>
+                </div>
+
+                <!-- Status Badge -->
+                <div class="text-center">
+                  <span [class]="'badge bg-' + getStatusColor(payment.status) + ' px-3 py-2'">
+                    <i [class]="getStatusIcon(payment.status) + ' me-1'"></i>
+                    {{ getStatusLabel(payment.status) }}
+                  </span>
+                </div>
+              </div>
+              
+              <div class="card-footer bg-transparent">
+                <div class="d-flex justify-content-between align-items-center">
+                  <small class="text-muted">
+                    Created {{ formatDate(payment.created_at) }}
+                  </small>
+                  <div class="btn-group btn-group-sm">
+                    <button 
+                      *ngIf="payment.status === 'pending' || payment.status === 'overdue'"
+                      class="btn btn-success" 
+                      (click)="openPaymentModal(payment)"
+                      title="Mark as Paid"
+                    >
+                      <i class="fas fa-check"></i>
+                    </button>
+                    <button 
+                      class="btn btn-outline-primary" 
+                      (click)="openEditModal(payment)"
+                      title="Edit"
+                    >
+                      <i class="fas fa-edit"></i>
+                    </button>
+                    <button 
+                      *ngIf="payment.status !== 'paid'"
+                      class="btn btn-outline-danger" 
+                      (click)="openDeleteModal(payment)"
+                      title="Delete"
+                    >
+                      <i class="fas fa-trash"></i>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- No Payments Message -->
+        <div *ngIf="payments.length === 0" class="text-center py-5">
+          <i class="fas fa-credit-card fa-5x text-muted mb-3"></i>
+          <h5 class="text-muted">No payments found</h5>
+          <p class="text-muted">Start by adding your first payment to the system!</p>
+          <button type="button" class="btn btn-success" (click)="openAddPaymentModal()">
+            <i class="fas fa-plus me-2"></i>Add Your First Payment
+          </button>
+        </div>
+      </div>
+
+      <!-- List View -->
+      <div *ngIf="viewMode === 'list' && !isLoading" class="card">
+        <div class="card-body p-0">
+          <div class="table-responsive">
+            <table class="table table-hover mb-0">
+              <thead class="table-dark">
+                <tr>
+                  <th>Player</th>
+                  <th>Category</th>
+                  <th>Amount</th>
+                  <th>Due Date</th>
+                  <th>Status</th>
+                  <th>Method</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let payment of payments" [class]="payment.status === 'overdue' ? 'table-warning' : ''">
+                  <td>
+                    <div>
+                      <div class="fw-bold">{{ payment.player_name || 'Unknown' }}</div>
+                      <small class="text-muted" *ngIf="payment.player_email">{{ payment.player_email }}</small>
+                    </div>
+                  </td>
+                  <td>{{ getCategoryName(payment.category_id) }}</td>
+                  <td>
+                    <div class="fw-bold">{{ formatCurrency(payment.total_amount || payment.amount) }}</div>
+                    <small *ngIf="payment.discount_amount > 0" class="text-success">
+                      -{{ formatCurrency(payment.discount_amount) }} discount
+                    </small>
+                    <small *ngIf="payment.late_fee > 0" class="text-warning d-block">
+                      +{{ formatCurrency(payment.late_fee) }} late fee
+                    </small>
+                  </td>
+                  <td>
+                    <div [class]="payment.status === 'overdue' ? 'text-danger fw-bold' : ''">
+                      {{ formatDate(payment.due_date) }}
+                    </div>
+                    <small *ngIf="payment.status === 'overdue'" class="text-danger">
+                      {{ getDaysOverdue(payment) }} days overdue
+                    </small>
+                  </td>
+                  <td>
+                    <span [class]="'badge bg-' + getStatusColor(payment.status)">
+                      <i [class]="getStatusIcon(payment.status) + ' me-1'"></i>
+                      {{ getStatusLabel(payment.status) }}
+                    </span>
+                  </td>
+                  <td>
+                    <span *ngIf="payment.payment_method" class="small">
+                      <i [class]="getPaymentMethodIcon(payment.payment_method) + ' me-1'"></i>
+                      {{ getPaymentMethodLabel(payment.payment_method) }}
+                    </span>
+                    <span *ngIf="!payment.payment_method" class="text-muted">-</span>
+                  </td>
+                  <td>
+                    <div class="btn-group btn-group-sm">
+                      <button 
+                        *ngIf="payment.status === 'pending' || payment.status === 'overdue'"
+                        class="btn btn-success" 
+                        (click)="openPaymentModal(payment)"
+                        title="Mark as Paid"
+                      >
+                        <i class="fas fa-check"></i>
+                      </button>
+                      <button 
+                        class="btn btn-outline-primary" 
+                        (click)="openEditModal(payment)"
+                        title="Edit"
+                      >
+                        <i class="fas fa-edit"></i>
+                      </button>
+                      <button 
+                        *ngIf="payment.status !== 'paid'"
+                        class="btn btn-outline-danger" 
+                        (click)="openDeleteModal(payment)"
+                        title="Delete"
+                      >
+                        <i class="fas fa-trash"></i>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+    <div *ngIf="viewMode === 'summary' && !isLoading">
+      <div class="row">
+        <!-- Revenue Chart -->
+        <div class="col-md-8 mb-4">
+          <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white">
+              <h5 class="mb-0">
+                <i class="fas fa-chart-line me-2 text-success"></i>Revenue Overview
+              </h5>
+            </div>
+            <div class="card-body">
+              <div style="height: 300px; position: relative;">
+                <canvas #revenueChart></canvas>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Payment Status Chart -->
+        <div class="col-md-4 mb-4">
+          <div class="card border-0 shadow-sm h-100">
+            <div class="card-header bg-white">
+              <h5 class="mb-0">
+                <i class="fas fa-chart-pie me-2 text-primary"></i>Payment Status
+              </h5>
+            </div>
+            <div class="card-body">
+              <div style="height: 250px; position: relative;">
+                <canvas #statusChart></canvas>
+              </div>
+            </div>
+          </div>
+        </div>
+    </div>
+
+  <!-- Additional Summary Cards -->
+  <div class="row">
+    <!-- Revenue Breakdown -->
+    <div class="col-md-4 mb-4">
+      <div class="card border-0 shadow-sm">
+        <div class="card-header bg-white">
+          <h5 class="mb-0">
+            <i class="fas fa-dollar-sign me-2 text-success"></i>Revenue Breakdown
+          </h5>
+        </div>
+        <div class="card-body">
+          <div class="mb-3">
+            <div class="d-flex justify-content-between">
+              <span>Total Revenue:</span>
+              <span class="fw-bold text-success">{{ formatCurrency(stats?.total_revenue || 0) }}</span>
+            </div>
+          </div>
+          <div class="mb-3">
+            <div class="d-flex justify-content-between">
+              <span>Pending Revenue:</span>
+              <span class="fw-bold text-warning">{{ formatCurrency(stats?.pending_revenue || 0) }}</span>
+            </div>
+          </div>
+          <div class="mb-3">
+            <div class="d-flex justify-content-between">
+              <span>Overdue Revenue:</span>
+              <span class="fw-bold text-danger">{{ formatCurrency(stats?.overdue_revenue || 0) }}</span>
+            </div>
+          </div>
+          <div class="mb-3">
+            <div class="d-flex justify-content-between">
+              <span>Average Payment:</span>
+              <span class="fw-bold">{{ formatCurrency(stats?.avg_payment_amount || 0) }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Payment Activity -->
+    <div class="col-md-4 mb-4">
+      <div class="card border-0 shadow-sm">
+        <div class="card-header bg-white">
+          <h5 class="mb-0">
+            <i class="fas fa-activity me-2 text-info"></i>Payment Activity
+          </h5>
+        </div>
+        <div class="card-body">
+          <div class="mb-3">
+            <div class="d-flex justify-content-between align-items-center">
+              <span>Success Rate:</span>
+              <div>
+                <span class="fw-bold text-primary">{{ stats?.payment_success_rate || 0 }}%</span>
+                <div class="progress mt-1" style="height: 4px; width: 80px;">
+                  <div class="progress-bar bg-primary" 
+                       [style.width.%]="stats?.payment_success_rate || 0">
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="mb-3">
+            <div class="d-flex justify-content-between">
+              <span>This Month:</span>
+              <span class="fw-bold text-success">{{ formatCurrency(stats?.this_month_collections || 0) }}</span>
+            </div>
+          </div>
+          <div class="mb-3">
+            <div class="d-flex justify-content-between">
+              <span>Total Payments:</span>
+              <span class="fw-bold">{{ stats?.total_payments || 0 }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="col-md-4 mb-4">
+      <div class="card border-0 shadow-sm">
+        <div class="card-header bg-white">
+          <h5 class="mb-0">
+            <i class="fas fa-bolt me-2 text-warning"></i>Quick Actions
+          </h5>
+        </div>
+        <div class="card-body">
+          <div class="d-grid gap-2">
+            <button class="btn btn-outline-primary btn-sm" (click)="selectedStatus = 'overdue'; onFilterChange()">
+              <i class="fas fa-exclamation-triangle me-2"></i>
+              View Overdue ({{ stats?.overdue_payments || 0 }})
+            </button>
+            <button class="btn btn-outline-warning btn-sm" (click)="selectedStatus = 'pending'; onFilterChange()">
+              <i class="fas fa-clock me-2"></i>
+              View Pending ({{ stats?.pending_payments || 0 }})
+            </button>
+            <button class="btn btn-outline-success btn-sm" (click)="openAddPaymentModal()">
+              <i class="fas fa-plus me-2"></i>
+              Add New Payment
+            </button>
+            <button class="btn btn-outline-info btn-sm" (click)="showBulkPaymentModal = true">
+              <i class="fas fa-users me-2"></i>
+              Bulk Payment
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Recent Payments Table -->
+  <div class="row">
+    <div class="col-12">
+      <div class="card border-0 shadow-sm">
+        <div class="card-header bg-white">
+          <h5 class="mb-0">
+            <i class="fas fa-clock me-2 text-secondary"></i>Recent Payments
+          </h5>
+        </div>
+        <div class="card-body">
+          <div class="table-responsive">
+            <table class="table table-hover mb-0">
+              <thead class="table-light">
+                <tr>
+                  <th>Player</th>
+                  <th>Category</th>
+                  <th>Amount</th>
+                  <th>Date</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let payment of payments.slice(0, 10)" [class]="payment.status === 'overdue' ? 'table-warning' : ''">
+                  <td>{{ payment.player_name || 'Unknown' }}</td>
+                  <td>{{ getCategoryName(payment.category_id) }}</td>
+                  <td class="fw-bold">{{ formatCurrency(payment.total_amount || payment.amount) }}</td>
+                  <td>{{ formatDate(payment.due_date) }}</td>
+                  <td>
+                    <span [class]="'badge bg-' + getStatusColor(payment.status)">
+                      {{ getStatusLabel(payment.status) }}
+                    </span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="text-center mt-3" *ngIf="payments.length > 10">
+            <button class="btn btn-outline-primary" (click)="viewMode = 'list'">
+              View All {{ payments.length }} Payments
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    </main>
+  </div>
+</div>
+<!-- Add Payment Modal -->
+<div class="modal" [style.display]="showAddPaymentModal ? 'block' : 'none'" [class.show]="showAddPaymentModal">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <form [formGroup]="paymentForm" (ngSubmit)="savePayment()">
+        <div class="modal-header bg-success text-white">
+          <h5 class="modal-title">
+            <i class="fas fa-plus me-2"></i>Add New Payment
+          </h5>
+          <button type="button" class="btn-close btn-close-white" (click)="closeAddPaymentModal()"></button>
+        </div>
+        
+        <div class="modal-body">
+          <div class="row g-4">
+            <!-- Payment Information -->
+            <div class="col-12">
+              <h6 class="text-success">
+                <i class="fas fa-info-circle me-2"></i>Payment Information
+              </h6>
+            </div>
+            
+            <div class="col-md-6">
+              <label for="playerId" class="form-label">Player *</label>
+              <select 
+                class="form-select"
+                id="playerId"
+                formControlName="player_id"
+                [class.is-invalid]="isFieldInvalid('player_id')"
+              >
+                <option value="">Select Player</option>
+                <!-- Note: You'll need to load players in the component -->
+                <option *ngFor="let player of players" [value]="player.id">
+  {{ player.first_name }} {{ player.last_name }} - {{ player.email }}
+</option>
+              </select>
+              <div class="invalid-feedback" *ngIf="isFieldInvalid('player_id')">
+                Player is required
+              </div>
+            </div>
+
+            <div class="col-md-6">
+              <label for="categoryId" class="form-label">Payment Category *</label>
+              <select 
+                class="form-select" 
+                id="categoryId"
+                formControlName="category_id"
+                [class.is-invalid]="isFieldInvalid('category_id')"
+                (change)="onCategoryChange($event)"
+              >
+                <option value="">Select Category</option>
+                <option *ngFor="let category of categories" [value]="category.id">
+                  {{ category.name }} ({{ formatCurrency(category.default_amount) }})
+                </option>
+              </select>
+              <div class="invalid-feedback" *ngIf="isFieldInvalid('category_id')">
+                Payment category is required
+              </div>
+            </div>
+
+            <div class="col-md-6">
+              <label for="paymentAmount" class="form-label">Amount *</label>
+              <div class="input-group">
+                <span class="input-group-text">$</span>
+                <input 
+                  type="number" 
+                  class="form-control" 
+                  id="paymentAmount"
+                  formControlName="amount"
+                  [class.is-invalid]="isFieldInvalid('amount')"
+                  step="0.01"
+                  min="0.01"
+                  placeholder="0.00"
+                >
+              </div>
+              <div class="invalid-feedback" *ngIf="isFieldInvalid('amount')">
+                Amount is required and must be greater than 0
+              </div>
+            </div>
+
+            <div class="col-md-6">
+              <label for="dueDate" class="form-label">Due Date *</label>
+              <input 
+                type="date" 
+                class="form-control" 
+                id="dueDate"
+                formControlName="due_date"
+                [class.is-invalid]="isFieldInvalid('due_date')"
+              >
+              <div class="invalid-feedback" *ngIf="isFieldInvalid('due_date')">
+                Due date is required
+              </div>
+            </div>
+
+            <div class="col-md-6">
+              <label for="discountAmount" class="form-label">Discount Amount</label>
+              <div class="input-group">
+                <span class="input-group-text">$</span>
+                <input 
+                  type="number" 
+                  class="form-control" 
+                  id="discountAmount"
+                  formControlName="discount_amount"
+                  step="0.01"
+                  min="0"
+                  placeholder="0.00"
+                >
+              </div>
+              <small class="form-text text-muted">Optional discount to apply</small>
+            </div>
+
+            <div class="col-12">
+              <label for="paymentNotes" class="form-label">Notes</label>
+              <textarea 
+                class="form-control" 
+                id="paymentNotes"
+                formControlName="notes"
+                rows="3"
+                placeholder="Additional notes about this payment..."
+              ></textarea>
+            </div>
+
+            <!-- Payment Preview -->
+            <div class="col-12" *ngIf="paymentForm.get('amount')?.value">
+              <div class="card bg-light">
+                <div class="card-body">
+                  <h6 class="card-title">
+                    <i class="fas fa-calculator me-2"></i>Payment Summary
+                  </h6>
+                  <div class="row">
+                    <div class="col-md-4">
+                      <div class="d-flex justify-content-between">
+                        <span>Amount:</span>
+                        <span class="fw-bold">{{ formatCurrency(paymentForm.get('amount')?.value || 0) }}</span>
+                      </div>
+                    </div>
+                    <div class="col-md-4">
+                      <div class="d-flex justify-content-between">
+                        <span>Discount:</span>
+                        <span class="text-success">-{{ formatCurrency(paymentForm.get('discount_amount')?.value || 0) }}</span>
+                      </div>
+                    </div>
+                    <div class="col-md-4">
+                      <div class="d-flex justify-content-between">
+                        <span class="fw-bold">Total:</span>
+                        <span class="fw-bold text-primary">
+                          {{ formatCurrency((paymentForm.get('amount')?.value || 0) - (paymentForm.get('discount_amount')?.value || 0)) }}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" (click)="closeAddPaymentModal()">
+            <i class="fas fa-times me-2"></i>Cancel
+          </button>
+          <button 
+            type="submit" 
+            class="btn btn-success"
+            [disabled]="paymentForm.invalid || isSubmitting"
+          >
+            <span *ngIf="isSubmitting" class="spinner-border spinner-border-sm me-2"></span>
+            <i *ngIf="!isSubmitting" class="fas fa-plus me-2"></i>
+            Create Payment
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Mark as Paid Modal -->
+<div class="modal" [style.display]="showPaymentModal ? 'block' : 'none'" [class.show]="showPaymentModal">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form [formGroup]="markPaidForm" (ngSubmit)="markPaymentPaid()">
+        <div class="modal-header bg-success text-white">
+          <h5 class="modal-title">
+            <i class="fas fa-check-circle me-2"></i>Mark Payment as Paid
+          </h5>
+          <button type="button" class="btn-close btn-close-white" (click)="closePaymentModal()"></button>
+        </div>
+        <div class="modal-body" *ngIf="selectedPayment">
+          <!-- Payment Details Summary -->
+          <div class="alert alert-info">
+            <h6 class="alert-heading mb-2">
+              <i class="fas fa-info-circle me-2"></i>Payment Details
+            </h6>
+            <div class="row">
+              <div class="col-6">
+                <strong>Player:</strong><br>
+                {{ selectedPayment.player_name }}
+              </div>
+              <div class="col-6">
+                <strong>Category:</strong><br>
+                {{ getCategoryName(selectedPayment.category_id) }}
+              </div>
+            </div>
+            <hr>
+            <div class="row">
+              <div class="col-6">
+                <strong>Amount Due:</strong><br>
+                <span class="h5 text-primary">{{ formatCurrency(selectedPayment.total_amount || selectedPayment.amount) }}</span>
+              </div>
+              <div class="col-6">
+                <strong>Due Date:</strong><br>
+                {{ formatDate(selectedPayment.due_date) }}
+                <span *ngIf="selectedPayment.status === 'overdue'" class="badge bg-danger ms-1">
+                  {{ getDaysOverdue(selectedPayment) }} days overdue
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Payment Method -->
+          <div class="mb-3">
+            <label for="paymentMethod" class="form-label">Payment Method *</label>
+            <select 
+              class="form-select" 
+              id="paymentMethod"
+              formControlName="payment_method"
+              required
+            >
+              <option *ngFor="let method of paymentMethods" [value]="method.value">
+                {{ method.label }}
+              </option>
+            </select>
+          </div>
+
+          <!-- Transaction ID -->
+          <div class="mb-3">
+            <label for="transactionId" class="form-label">Transaction ID / Reference</label>
+            <input 
+              type="text" 
+              class="form-control" 
+              id="transactionId"
+              formControlName="transaction_id"
+              placeholder="Optional transaction reference"
+            >
+          </div>
+
+          <!-- Paid Amount -->
+          <div class="mb-3">
+            <label for="paidAmount" class="form-label">Amount Paid</label>
+            <div class="input-group">
+              <span class="input-group-text">$</span>
+              <input 
+                type="number" 
+                class="form-control" 
+                id="paidAmount"
+                formControlName="paid_amount"
+                step="0.01"
+                min="0.01"
+              >
+            </div>
+            <small class="form-text text-muted">
+              Leave blank to use the full amount due ({{ formatCurrency(selectedPayment.total_amount || selectedPayment.amount) }})
+            </small>
+          </div>
+
+          <!-- Payment Notes -->
+          <div class="mb-3">
+            <label for="paymentNotesModal" class="form-label">Payment Notes</label>
+            <textarea 
+              class="form-control" 
+              id="paymentNotesModal"
+              formControlName="notes"
+              rows="3"
+              placeholder="Additional notes about this payment..."
+            ></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" (click)="closePaymentModal()">
+            <i class="fas fa-times me-2"></i>Cancel
+          </button>
+          <button 
+            type="submit" 
+            class="btn btn-success"
+            [disabled]="markPaidForm.invalid || isSubmitting"
+          >
+            <span *ngIf="isSubmitting" class="spinner-border spinner-border-sm me-2"></span>
+            <i *ngIf="!isSubmitting" class="fas fa-check me-2"></i>
+            Mark as Paid
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Edit Payment Modal -->
+<div class="modal" [style.display]="showEditModal ? 'block' : 'none'" [class.show]="showEditModal">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <form [formGroup]="paymentForm" (ngSubmit)="savePayment()">
+        <div class="modal-header bg-primary text-white">
+          <h5 class="modal-title">
+            <i class="fas fa-edit me-2"></i>Edit Payment - {{ editingPayment?.player_name }}
+          </h5>
+          <button type="button" class="btn-close btn-close-white" (click)="closeEditModal()"></button>
+        </div>
+        <div class="modal-body">
+          <div class="row g-4">
+            <!-- Same form structure as Add Payment Modal, but pre-filled -->
+            <div class="col-12">
+              <h6 class="text-primary">
+                <i class="fas fa-info-circle me-2"></i>Payment Information
+              </h6>
+            </div>
+            
+           <div class="col-md-6">
+                <label for="editPlayerId" class="form-label">Player *</label>
+                <select 
+                    class="form-select"
+                    id="editPlayerId"
+                    formControlName="player_id"
+                    [class.is-invalid]="isFieldInvalid('player_id')"
+                >
+                    <option value="">Select Player</option>
+                    <!-- REPLACE THE HARDCODED OPTIONS WITH THIS -->
+                    <option *ngFor="let player of players" [value]="player.id">
+                    {{ player.first_name }} {{ player.last_name }} - {{ player.email }}
+                    </option>
+                </select>
+                </div>
+
+            <div class="col-md-6">
+              <label for="editCategoryId" class="form-label">Payment Category *</label>
+              <select 
+                class="form-select" 
+                id="editCategoryId"
+                formControlName="category_id"
+                [class.is-invalid]="isFieldInvalid('category_id')"
+              >
+                <option value="">Select Category</option>
+                <option *ngFor="let category of categories" [value]="category.id">
+                  {{ category.name }} ({{ formatCurrency(category.default_amount) }})
+                </option>
+              </select>
+            </div>
+
+            <div class="col-md-6">
+              <label for="editPaymentAmount" class="form-label">Amount *</label>
+              <div class="input-group">
+                <span class="input-group-text">$</span>
+                <input 
+                  type="number" 
+                  class="form-control" 
+                  id="editPaymentAmount"
+                  formControlName="amount"
+                  [class.is-invalid]="isFieldInvalid('amount')"
+                  step="0.01"
+                  min="0.01"
+                >
+              </div>
+            </div>
+
+            <div class="col-md-6">
+              <label for="editDueDate" class="form-label">Due Date *</label>
+              <input 
+                type="date" 
+                class="form-control" 
+                id="editDueDate"
+                formControlName="due_date"
+                [class.is-invalid]="isFieldInvalid('due_date')"
+              >
+            </div>
+
+            <div class="col-md-6">
+              <label for="editDiscountAmount" class="form-label">Discount Amount</label>
+              <div class="input-group">
+                <span class="input-group-text">$</span>
+                <input 
+                  type="number" 
+                  class="form-control" 
+                  id="editDiscountAmount"
+                  formControlName="discount_amount"
+                  step="0.01"
+                  min="0"
+                >
+              </div>
+            </div>
+
+            <div class="col-12">
+              <label for="editPaymentNotes" class="form-label">Notes</label>
+              <textarea 
+                class="form-control" 
+                id="editPaymentNotes"
+                formControlName="notes"
+                rows="3"
+              ></textarea>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" (click)="closeEditModal()">
+            <i class="fas fa-times me-2"></i>Cancel
+          </button>
+          <button 
+            type="submit" 
+            class="btn btn-primary"
+            [disabled]="paymentForm.invalid || isSubmitting"
+          >
+            <span *ngIf="isSubmitting" class="spinner-border spinner-border-sm me-2"></span>
+            <i *ngIf="!isSubmitting" class="fas fa-save me-2"></i>
+            Update Payment
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Delete Payment Modal -->
+<div class="modal" [style.display]="showDeleteModal ? 'block' : 'none'" [class.show]="showDeleteModal">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header bg-danger text-white">
+        <h5 class="modal-title">
+          <i class="fas fa-exclamation-triangle me-2"></i>Confirm Delete
+        </h5>
+        <button type="button" class="btn-close btn-close-white" (click)="closeDeleteModal()"></button>
+      </div>
+      <div class="modal-body" *ngIf="paymentToDelete">
+        <div class="text-center">
+          <i class="fas fa-trash-alt fa-4x text-danger mb-3"></i>
+          <h5>Are you sure you want to delete this payment?</h5>
+          
+          <div class="alert alert-warning text-start mt-3">
+            <div class="row">
+              <div class="col-6">
+                <strong>Player:</strong><br>
+                {{ paymentToDelete.player_name }}
+              </div>
+              <div class="col-6">
+                <strong>Amount:</strong><br>
+                {{ formatCurrency(paymentToDelete.total_amount || paymentToDelete.amount) }}
+              </div>
+            </div>
+            <hr class="my-2">
+            <div class="row">
+              <div class="col-6">
+                <strong>Category:</strong><br>
+                {{ getCategoryName(paymentToDelete.category_id) }}
+              </div>
+              <div class="col-6">
+                <strong>Status:</strong><br>
+                <span [class]="'badge bg-' + getStatusColor(paymentToDelete.status)">
+                  {{ getStatusLabel(paymentToDelete.status) }}
+                </span>
+              </div>
+            </div>
+          </div>
+          
+          <p class="text-muted mb-0">
+            <small>This action cannot be undone</small>
+          </p>
+          
+          <div *ngIf="paymentToDelete.status === 'paid'" class="alert alert-danger mt-3">
+            <i class="fas fa-exclamation-triangle me-2"></i>
+            <strong>Warning:</strong> This payment has been marked as paid. 
+            Deleting it may affect your financial records.
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="closeDeleteModal()">
+          <i class="fas fa-times me-2"></i>Cancel
+        </button>
+        <button type="button" class="btn btn-danger" (click)="deletePayment()">
+          <i class="fas fa-trash me-2"></i>Delete Payment
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Bulk Payment Modal -->
+<div class="modal" [style.display]="showBulkPaymentModal ? 'block' : 'none'" [class.show]="showBulkPaymentModal">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <form [formGroup]="bulkPaymentForm" (ngSubmit)="createBulkPayments()">
+        <div class="modal-header bg-primary text-white">
+          <h5 class="modal-title">
+            <i class="fas fa-users me-2"></i>Create Bulk Payments
+          </h5>
+          <button type="button" class="btn-close btn-close-white" (click)="showBulkPaymentModal = false"></button>
+        </div>
+        <div class="modal-body">
+          <div class="alert alert-info">
+            <i class="fas fa-info-circle me-2"></i>
+            Create multiple payments at once for selected players with the same category and due date.
+          </div>
+          
+          <div class="row g-4">
+            <!-- <div class="col-12">
+              <label class="form-label">Select Players *</label>
+              <div class="border rounded p-3" style="max-height: 200px; overflow-y: auto;"> -->
+                <!-- <div class="form-check">
+                  <input class="form-check-input" type="checkbox" id="selectAllPlayers" (change)="toggleSelectAllPlayers($event)">
+                  <label class="form-check-label fw-bold" for="selectAllPlayers">
+                    Select All Players
+                  </label>
+                </div> -->
+                <!-- <hr> -->
+                <!-- Note: You'll need to load players in the component -->
+                <!-- <div class="form-check" *ngFor="let player of [
+                  {id: 1, name: 'John Doe', email: 'john@example.com'},
+                  {id: 2, name: 'Jane Smith', email: 'jane@example.com'},
+                  {id: 3, name: 'Mike Johnson', email: 'mike@example.com'}
+                ]">
+                  <input 
+                    class="form-check-input" 
+                    type="checkbox" 
+                    [id]="'player-' + player.id"
+                    [value]="player.id"
+                    (change)="togglePlayerSelection(player.id, $event)"
+                  >
+                  <label class="form-check-label" [for]="'player-' + player.id">
+                    {{ player.name }}
+                    <small class="text-muted d-block">{{ player.email }}</small>
+                  </label>
+                </div> -->
+              <!-- </div>
+            </div> -->
+            <div class="col-12">
+                            <label class="form-label">Select Players *</label>
+                            <div class="border rounded p-3" style="max-height: 200px; overflow-y: auto;">
+                                <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="selectAllPlayers" (change)="toggleSelectAllPlayers($event)">
+                                <label class="form-check-label fw-bold" for="selectAllPlayers">
+                                    Select All Players
+                                </label>
+                                </div>
+                                <hr>
+                                <!-- REPLACE THE HARDCODED PLAYERS WITH THIS -->
+                                <div class="form-check" *ngFor="let player of players">
+                                <input 
+                                    class="form-check-input" 
+                                    type="checkbox" 
+                                    [id]="'player-' + player.id"
+                                    [value]="player.id"
+                                    (change)="togglePlayerSelection(player.id, $event)"
+                                >
+                                <label class="form-check-label" [for]="'player-' + player.id">
+                                    {{ player.first_name }} {{ player.last_name }}
+                                    <small class="text-muted d-block">{{ player.email }}</small>
+                                </label>
+                                </div>
+                            </div>
+                            </div>
+
+            <div class="col-md-6">
+              <label for="bulkCategoryId" class="form-label">Payment Category *</label>
+              <select 
+                class="form-select" 
+                id="bulkCategoryId"
+                formControlName="category_id"
+                required
+              >
+                <option value="">Select Category</option>
+                <option *ngFor="let category of categories" [value]="category.id">
+                  {{ category.name }} ({{ formatCurrency(category.default_amount) }})
+                </option>
+              </select>
+            </div>
+
+            <div class="col-md-6">
+              <label for="bulkAmount" class="form-label">Amount</label>
+              <div class="input-group">
+                <span class="input-group-text">$</span>
+                <input 
+                  type="number" 
+                  class="form-control" 
+                  id="bulkAmount"
+                  formControlName="amount"
+                  step="0.01"
+                  min="0.01"
+                  placeholder="Use category default"
+                >
+              </div>
+              <small class="form-text text-muted">Leave blank to use category default amount</small>
+            </div>
+
+            <div class="col-md-6">
+              <label for="bulkDueDate" class="form-label">Due Date *</label>
+              <input 
+                type="date" 
+                class="form-control" 
+                id="bulkDueDate"
+                formControlName="due_date"
+                required
+              >
+            </div>
+
+            <div class="col-12">
+              <label for="bulkNotes" class="form-label">Notes</label>
+              <textarea 
+                class="form-control" 
+                id="bulkNotes"
+                formControlName="notes"
+                rows="3"
+                placeholder="Notes to add to all payments..."
+              ></textarea>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" (click)="showBulkPaymentModal = false">
+            <i class="fas fa-times me-2"></i>Cancel
+          </button>
+          <button 
+            type="submit" 
+            class="btn btn-primary"
+            [disabled]="bulkPaymentForm.invalid || isSubmitting"
+          >
+            <span *ngIf="isSubmitting" class="spinner-border spinner-border-sm me-2"></span>
+            <i *ngIf="!isSubmitting" class="fas fa-users me-2"></i>
+            Create Payments
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Backdrops -->
+<div *ngIf="showAddPaymentModal || showEditModal || showPaymentModal || showDeleteModal || showBulkPaymentModal" class="modal-backdrop fade show"></div>

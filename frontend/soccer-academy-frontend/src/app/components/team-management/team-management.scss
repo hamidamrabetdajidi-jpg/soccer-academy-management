@@ -1,0 +1,58 @@
+.team-card {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.team-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 20px rgba(0,0,0,0.15) !important;
+}
+
+.card-header {
+  border-bottom: none;
+}
+
+.text-sm {
+  font-size: 0.875rem;
+}
+
+.badge {
+  font-size: 0.75rem;
+}
+
+.dropdown-toggle::after {
+  display: none;
+}
+
+.form-control-color {
+  border: none;
+  padding: 0;
+}
+
+.modal {
+  background-color: rgba(0, 0, 0, 0.5);
+}
+
+// Team color animations
+.team-card .card-header {
+  background: linear-gradient(135deg, var(--primary-color, #2c5530), var(--secondary-color, #5cb85c)) !important;
+  background-size: 200% 200%;
+  animation: gradientShift 8s ease infinite;
+}
+
+@keyframes gradientShift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+// Responsive adjustments
+@media (max-width: 768px) {
+  .team-card {
+    margin-bottom: 1rem;
+  }
+  
+  .btn-toolbar {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+}

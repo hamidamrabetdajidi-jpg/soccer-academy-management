@@ -1,0 +1,259 @@
+.field-card {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  
+  &:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15) !important;
+  }
+}
+
+// Form enhancements
+.form-control, .form-select {
+  transition: all 0.3s ease;
+  
+  &:focus {
+    border-color: #28a745;
+    box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.25);
+  }
+}
+
+// Modal enhancements
+.modal-xl {
+  max-width: 1200px;
+}
+
+.modal-content {
+  border-radius: 15px;
+  
+  .modal-header {
+    border-radius: 15px 15px 0 0;
+    border-bottom: 2px solid rgba(255,255,255,0.2);
+  }
+  
+  .modal-footer {
+    border-top: 2px solid #e9ecef;
+    background: #f8f9fa;
+    border-radius: 0 0 15px 15px;
+  }
+}
+
+// Badge enhancements
+.badge {
+  font-size: 0.75rem;
+  padding: 0.4rem 0.6rem;
+}
+
+// Responsive adjustments
+@media (max-width: 768px) {
+  .field-card .card-body {
+    padding: 1rem;
+  }
+  
+  .btn-group {
+    flex-direction: column;
+    width: 100%;
+    
+    .btn {
+      border-radius: 0.375rem !important;
+      margin-bottom: 2px;
+    }
+  }
+}
+
+// Animation for cards
+.field-card {
+  animation: fadeIn 0.5s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// Status indicators
+.bg-success {
+  background: linear-gradient(135deg, #28a745, #20c997) !important;
+}
+
+.bg-danger {
+  background: linear-gradient(135deg, #dc3545, #e74c3c) !important;
+}
+
+.bg-warning {
+  background: linear-gradient(135deg, #ffc107, #f39c12) !important;
+}
+
+.bg-info {
+  background: linear-gradient(135deg, #17a2b8, #3498db) !important;
+}
+
+.bg-primary {
+  background: linear-gradient(135deg, #007bff, #0056b3) !important;
+}
+
+// Table improvements
+.table th {
+  border-top: none;
+  font-weight: 600;
+}
+
+// Sidebar active state
+.sidebar .nav-link.active {
+  font-weight: 600;
+}
+// Enhanced filter section
+.advanced-filters {
+  background: #f8f9fa;
+  border-radius: 8px;
+  padding: 1rem;
+  margin-top: 0.5rem;
+  
+  .form-check {
+    margin-bottom: 0.5rem;
+    
+    .form-check-input:checked {
+      background-color: #28a745;
+      border-color: #28a745;
+    }
+  }
+}
+
+// Active filter badges
+.badge {
+  .btn-close {
+    opacity: 0.7;
+    
+    &:hover {
+      opacity: 1;
+    }
+  }
+}
+
+// Search input enhancements
+.input-group {
+  .form-control:focus {
+    border-color: #28a745;
+    box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.25);
+  }
+  
+  .input-group-text {
+    background: #e9ecef;
+    border-color: #ced4da;
+  }
+}
+
+// Filter cards
+.card {
+  transition: all 0.3s ease;
+  
+  &:hover {
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  }
+}
+
+// Results summary
+.results-summary {
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  margin-bottom: 1rem;
+}
+
+// Sort controls
+.form-select {
+  &.form-select-sm {
+    font-size: 0.875rem;
+  }
+}
+
+// Responsive adjustments
+@media (max-width: 768px) {
+  .advanced-filters {
+    .row > div {
+      margin-bottom: 1rem;
+    }
+  }
+  
+  .d-flex.justify-content-between {
+    flex-direction: column;
+    gap: 1rem;
+    
+    .form-label {
+      margin-bottom: 0.25rem !important;
+    }
+  }
+}
+
+// Loading state
+.loading-overlay {
+  position: relative;
+  
+  &::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.8);
+    z-index: 10;
+  }
+}
+
+// Animation for filter changes
+.filter-transition {
+  transition: all 0.3s ease-in-out;
+}
+
+// Status indicators
+.availability-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.375rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  
+  &.available {
+    background: rgba(40, 167, 69, 0.1);
+    color: #28a745;
+  }
+  
+  &.occupied {
+    background: rgba(220, 53, 69, 0.1);
+    color: #dc3545;
+  }
+  
+  &.maintenance {
+    background: rgba(255, 193, 7, 0.1);
+    color: #ffc107;
+  }
+}
+
+// Enhanced field cards with filter highlighting
+.field-card {
+  position: relative;
+  
+  &.filtered {
+    border-left: 4px solid #28a745;
+    
+    &::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(40, 167, 69, 0.05);
+      border-radius: 0.375rem;
+      pointer-events: none;
+    }
+  }
+}

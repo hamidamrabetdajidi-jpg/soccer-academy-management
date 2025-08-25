@@ -1,0 +1,95 @@
+<div class="container-fluid">
+  <div class="row">
+    <!-- Sidebar -->
+    <nav class="col-md-3 col-lg-2 d-md-block sidebar collapse">
+      <div class="position-sticky pt-3">
+        <div class="text-center mb-4">
+          <i class="fas fa-futbol fa-2x text-white mb-2"></i>
+          <h5 class="text-white">Soccer Academy</h5>
+        </div>
+
+        <ul class="nav flex-column">
+          <li class="nav-item">
+            <a class="nav-link" [routerLink]="['/dashboard']" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
+              <i class="fas fa-tachometer-alt me-2"></i>
+              Dashboard
+            </a>
+          </li>
+          <li class="nav-item" *ngIf="hasRole('admin')">
+            <a class="nav-link" [routerLink]="['/users']" routerLinkActive="active">
+              <i class="fas fa-users me-2"></i>
+              User Management
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#" (click)="$event.preventDefault()">
+              <i class="fas fa-user-graduate me-2"></i>
+              Players
+              <span class="badge bg-secondary ms-2">Soon</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#" (click)="$event.preventDefault()">
+              <i class="fas fa-users me-2"></i>
+              Teams
+              <span class="badge bg-secondary ms-2">Soon</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#" (click)="$event.preventDefault()">
+              <i class="fas fa-calendar me-2"></i>
+              Training Sessions
+              <span class="badge bg-secondary ms-2">Soon</span>
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#" (click)="$event.preventDefault()">
+              <i class="fas fa-chart-bar me-2"></i>
+              Reports
+              <span class="badge bg-secondary ms-2">Soon</span>
+            </a>
+          </li>
+        </ul>
+
+        <hr class="text-white">
+
+        <ul class="nav flex-column">
+          <li class="nav-item">
+            <a class="nav-link" href="#" (click)="logout()">
+              <i class="fas fa-sign-out-alt me-2"></i>
+              Logout
+            </a>
+          </li>
+        </ul>
+      </div>
+    </nav>
+
+    <!-- Main content -->
+    <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 content-wrapper">
+      <!-- Header -->
+      <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <h1 class="h2">
+          <ng-content select="[slot=page-title]"></ng-content>
+        </h1>
+        <div class="btn-toolbar mb-2 mb-md-0">
+          <ng-content select="[slot=header-actions]"></ng-content>
+          <div class="dropdown ms-2">
+            <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+              <i class="fas fa-user me-2"></i>
+              {{ currentUser?.first_name }} {{ currentUser?.last_name }}
+            </button>
+            <ul class="dropdown-menu">
+              <li><a class="dropdown-item" href="#"><i class="fas fa-user me-2"></i>Profile</a></li>
+              <li><a class="dropdown-item" href="#"><i class="fas fa-cog me-2"></i>Settings</a></li>
+              <li><hr class="dropdown-divider"></li>
+              <li><a class="dropdown-item" href="#" (click)="logout()"><i class="fas fa-sign-out-alt me-2"></i>Logout</a></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- Content -->
+      <ng-content></ng-content>
+    </main>
+  </div>
+</div>

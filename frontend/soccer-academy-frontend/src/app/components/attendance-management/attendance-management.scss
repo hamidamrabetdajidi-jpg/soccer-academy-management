@@ -1,0 +1,467 @@
+// Attendance stat cards
+.attendance-stat-card {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1) !important;
+  }
+  
+  .card-body {
+    padding: 1.5rem 1rem;
+  }
+}
+
+// Attendance cards
+.attendance-card {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  border-radius: 12px;
+  overflow: hidden;
+  
+  &:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15) !important;
+  }
+  
+  .card-header {
+    border-bottom: none;
+    padding: 1rem 1.25rem;
+    
+    h6 {
+      font-size: 1rem;
+      font-weight: 600;
+    }
+  }
+  
+  .card-body {
+    padding: 1.25rem;
+  }
+  
+  .card-footer {
+    padding: 0.75rem 1.25rem;
+    border-top: 1px solid rgba(0,0,0,0.05);
+  }
+}
+
+// Status indicators
+.badge {
+  font-size: 0.75rem;
+  padding: 0.4rem 0.6rem;
+  font-weight: 500;
+  
+  &.bg-success {
+    background-color: #28a745 !important;
+  }
+  
+&.bg-danger {
+   background-color: #dc3545 !important;
+ }
+ 
+ &.bg-warning {
+   background-color: #ffc107 !important;
+   color: #212529 !important;
+ }
+ 
+ &.bg-info {
+   background-color: #17a2b8 !important;
+ }
+ 
+ &.bg-secondary {
+   background-color: #6c757d !important;
+ }
+}
+
+// Progress bars
+.progress {
+ border-radius: 10px;
+ 
+ .progress-bar {
+   border-radius: 10px;
+   transition: width 0.6s ease;
+ }
+}
+
+// Modal enhancements
+.modal-content {
+ border-radius: 15px;
+ border: none;
+ box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+}
+
+.modal-header {
+ border-radius: 15px 15px 0 0;
+ border-bottom: none;
+ padding: 1.5rem;
+ 
+ .modal-title {
+   font-weight: 600;
+   font-size: 1.2rem;
+ }
+}
+
+.modal-body {
+ padding: 1.5rem;
+}
+
+.modal-footer {
+ border-top: 1px solid rgba(0,0,0,0.1);
+ padding: 1rem 1.5rem;
+ border-radius: 0 0 15px 15px;
+}
+
+// Form styling
+.form-label {
+ font-weight: 600;
+ color: #495057;
+ margin-bottom: 0.5rem;
+}
+
+.form-control, .form-select {
+ border-radius: 8px;
+ border: 1px solid #dee2e6;
+ padding: 0.625rem 0.75rem;
+ transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+ 
+ &:focus {
+   border-color: #28a745;
+   box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.25);
+ }
+ 
+ &.is-invalid {
+   border-color: #dc3545;
+   
+   &:focus {
+     border-color: #dc3545;
+     box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
+   }
+ }
+}
+
+// Button styling
+.btn {
+ border-radius: 8px;
+ font-weight: 500;
+ padding: 0.5rem 1rem;
+ transition: all 0.2s ease;
+ 
+ &:hover {
+   transform: translateY(-1px);
+ }
+ 
+ &.btn-success {
+   background-color: #28a745;
+   border-color: #28a745;
+   
+   &:hover {
+     background-color: #218838;
+     border-color: #1e7e34;
+   }
+ }
+ 
+ &.btn-primary {
+   background-color: #007bff;
+   border-color: #007bff;
+   
+   &:hover {
+     background-color: #0069d9;
+     border-color: #0062cc;
+   }
+ }
+ 
+ &.btn-outline-primary {
+   color: #007bff;
+   border-color: #007bff;
+   
+   &:hover {
+     background-color: #007bff;
+     border-color: #007bff;
+     color: #fff;
+   }
+ }
+}
+
+// Table styling
+.table {
+ border-radius: 10px;
+ overflow: hidden;
+ 
+ thead {
+   th {
+     border-bottom: none;
+     font-weight: 600;
+     text-transform: uppercase;
+     font-size: 0.8rem;
+     letter-spacing: 0.5px;
+     padding: 1rem 0.75rem;
+   }
+ }
+ 
+ tbody {
+   tr {
+     transition: background-color 0.2s ease;
+     
+     &:hover {
+       background-color: rgba(0,123,255,0.05);
+     }
+     
+     td {
+       padding: 1rem 0.75rem;
+       border-top: 1px solid rgba(0,0,0,0.05);
+       vertical-align: middle;
+     }
+   }
+ }
+}
+
+// Search and filter section
+.card {
+ border-radius: 12px;
+ border: none;
+ box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+ 
+ .card-body {
+   padding: 1.5rem;
+ }
+}
+
+// Animation for cards
+.attendance-card {
+ animation: fadeInUp 0.5s ease-in-out;
+}
+
+@keyframes fadeInUp {
+ from {
+   opacity: 0;
+   transform: translateY(30px);
+ }
+ to {
+   opacity: 1;
+   transform: translateY(0);
+ }
+}
+
+// Responsive adjustments
+@media (max-width: 768px) {
+ .attendance-stat-card {
+   margin-bottom: 1rem;
+   
+   .card-body {
+     padding: 1rem 0.75rem;
+   }
+   
+   .h3 {
+     font-size: 1.2rem !important;
+   }
+ }
+ 
+ .attendance-card {
+   margin-bottom: 1.5rem;
+   
+   .card-body {
+     padding: 1rem;
+   }
+ }
+ 
+ .modal-dialog {
+   margin: 0.5rem;
+   
+   &.modal-xl {
+     max-width: calc(100vw - 1rem);
+   }
+ }
+ 
+ .btn-toolbar {
+   flex-direction: column;
+   gap: 0.5rem;
+   
+   .btn-group {
+     width: 100%;
+     
+     .btn {
+       flex: 1;
+     }
+   }
+ }
+}
+
+// Alert styling
+.alert {
+ border-radius: 10px;
+ border: none;
+ padding: 1rem 1.25rem;
+ 
+ &.alert-success {
+   background-color: rgba(40, 167, 69, 0.1);
+   color: #155724;
+ }
+ 
+ &.alert-danger {
+   background-color: rgba(220, 53, 69, 0.1);
+   color: #721c24;
+ }
+ 
+ &.alert-info {
+   background-color: rgba(23, 162, 184, 0.1);
+   color: #0c5460;
+ }
+}
+
+// Loading spinner
+.spinner-border {
+ animation: spinner-border 0.75s linear infinite;
+}
+
+// View mode toggle
+.btn-group {
+ .btn {
+   &.active {
+     background-color: #28a745;
+     border-color: #28a745;
+     color: #fff;
+   }
+ }
+}
+
+// Sidebar active link
+.sidebar .nav-link.active {
+ background-color: #5cb85c !important;
+ border-radius: 0.375rem;
+ font-weight: 600;
+}
+
+// Form check styling
+.form-check {
+ padding-left: 1.5rem;
+ 
+ .form-check-input {
+   width: 1.2rem;
+   height: 1.2rem;
+   margin-top: 0.1rem;
+   border-radius: 4px;
+   
+   &:checked {
+     background-color: #28a745;
+     border-color: #28a745;
+   }
+   
+   &:focus {
+     box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.25);
+   }
+ }
+ 
+ .form-check-label {
+   font-weight: 500;
+   cursor: pointer;
+   
+   &:hover {
+     color: #28a745;
+   }
+ }
+}
+
+// Player selection cards in bulk modal
+.card {
+ .card-header {
+   background-color: #f8f9fa;
+   border-bottom: 1px solid rgba(0,0,0,0.125);
+   padding: 0.75rem 1rem;
+   
+   h6 {
+     margin-bottom: 0;
+     font-weight: 600;
+   }
+ }
+ 
+ .card-footer {
+   background-color: #f8f9fa;
+   border-top: 1px solid rgba(0,0,0,0.125);
+   padding: 0.5rem 1rem;
+ }
+}
+
+// Status-specific styling
+.table-warning {
+ background-color: rgba(255, 193, 7, 0.1) !important;
+}
+
+.table-success {
+ background-color: rgba(40, 167, 69, 0.1) !important;
+}
+
+// Performance indicators
+.text-success {
+ color: #28a745 !important;
+}
+
+.text-danger {
+ color: #dc3545 !important;
+}
+
+.text-warning {
+ color: #ffc107 !important;
+}
+
+.text-info {
+ color: #17a2b8 !important;
+}
+
+// Summary modal enhancements
+.modal-xl {
+ .table-responsive {
+   border-radius: 8px;
+   overflow: hidden;
+ }
+ 
+ .progress {
+   height: 20px;
+   background-color: rgba(0,0,0,0.1);
+   
+   .progress-bar {
+     font-size: 0.8rem;
+     font-weight: 600;
+     line-height: 20px;
+   }
+ }
+}
+
+// Custom badges for ranking
+.badge {
+ &.bg-warning {
+   background-color: #ffc107 !important;
+   color: #212529 !important;
+ }
+ 
+ &.bg-info {
+   background-color: #17a2b8 !important;
+ }
+ 
+ &.bg-secondary {
+   background-color: #6c757d !important;
+ }
+}
+
+// Card border colors for performance categories
+.border-success {
+ border-color: #28a745 !important;
+}
+
+.border-warning {
+ border-color: #ffc107 !important;
+}
+
+.border-danger {
+ border-color: #dc3545 !important;
+}
+
+// Header backgrounds for performance cards
+.bg-success {
+ background-color: #28a745 !important;
+}
+
+.bg-warning {
+ background-color: #ffc107 !important;
+}
+
+.bg-danger {
+ background-color: #dc3545 !important;
+}

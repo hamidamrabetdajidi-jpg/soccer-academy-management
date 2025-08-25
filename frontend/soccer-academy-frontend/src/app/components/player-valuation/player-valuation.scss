@@ -1,0 +1,122 @@
+.valuation-card {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  
+  &:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.15) !important;
+  }
+}
+
+.rating-circle {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  
+  .rating-number {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #fff;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+  }
+}
+
+.rating-circle-large {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  
+  .rating-number-large {
+    font-size: 2rem;
+    font-weight: bold;
+    color: #fff;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+  }
+}
+
+.bg-gradient-primary {
+  background: linear-gradient(135deg, #007bff, #0056b3);
+}
+
+.form-range {
+  &::-webkit-slider-thumb {
+    background: #007bff;
+  }
+  
+  &::-moz-range-thumb {
+    background: #007bff;
+    border: none;
+  }
+}
+
+.progress {
+  border-radius: 10px;
+  
+  .progress-bar {
+    border-radius: 10px;
+  }
+}
+
+.card {
+  border-radius: 15px;
+  
+  .card-header {
+    border-radius: 15px 15px 0 0;
+  }
+}
+
+.rating-preview {
+  padding: 20px;
+  border-radius: 15px;
+  background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+}
+
+// Responsive adjustments
+@media (max-width: 768px) {
+  .rating-circle {
+    width: 60px;
+    height: 60px;
+    
+    .rating-number {
+      font-size: 1.2rem;
+    }
+  }
+  
+  .rating-circle-large {
+    width: 100px;
+    height: 100px;
+    
+    .rating-number-large {
+      font-size: 1.7rem;
+    }
+  }
+  
+  .col-md-2 {
+    margin-bottom: 1rem;
+  }
+}
+
+// Animation for skill progress bars
+.progress-bar {
+  animation: progressAnimation 1s ease-in-out;
+}
+
+@keyframes progressAnimation {
+  0% {
+    width: 0%;
+  }
+}
+
+// Hover effects for cards
+.card:hover {
+  .card-header {
+    background: linear-gradient(135deg, #007bff, #0056b3) !important;
+  }
+}

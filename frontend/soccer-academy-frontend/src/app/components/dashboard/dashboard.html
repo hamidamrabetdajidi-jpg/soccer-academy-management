@@ -1,0 +1,182 @@
+<div class="container-fluid">
+  <div class="row">
+    <!-- Sidebar -->
+    <nav class="col-md-3 col-lg-2 d-md-block sidebar collapse">
+      <div class="position-sticky pt-3">
+        <div class="text-center mb-4">
+          <i class="fas fa-futbol fa-2x text-white mb-2"></i>
+          <h5 class="text-white">Soccer Academy</h5>
+        </div>
+
+        <ul class="nav flex-column">
+          <li class="nav-item">
+            
+            <a class="nav-link active" [routerLink]="['/dashboard']" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
+              <i class="fas fa-tachometer-alt me-2"></i>
+              Dashboard
+            </a>
+          </li>
+          <li class="nav-item">
+          <a class="nav-link" 
+            href="#" 
+            (click)="navigateToUsers($event)">
+            <i class="fas fa-users me-2"></i>
+            User Management
+          </a>
+        </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#" (click)="$event.preventDefault()">
+              <i class="fas fa-user-graduate me-2"></i>
+              Players
+              <!-- <span class="badge bg-secondary ms-2">Soon</span> -->
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#" (click)="$event.preventDefault()">
+              <i class="fas fa-users me-2"></i>
+              Teams
+              <!-- <span class="badge bg-secondary ms-2">Soon</span> -->
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#" (click)="$event.preventDefault()">
+              <i class="fas fa-calendar me-2"></i>
+              Training Sessions
+              <!-- <span class="badge bg-secondary ms-2">Soon</span> -->
+            </a>
+          </li>
+        </ul>
+
+        <hr class="text-white">
+
+        <ul class="nav flex-column">
+          <li class="nav-item">
+            <a class="nav-link" href="#" (click)="logout()">
+              <i class="fas fa-sign-out-alt me-2"></i>
+              Logout
+            </a>
+          </li>
+        </ul>
+      </div>
+    </nav>
+
+    <!-- Main content -->
+    <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 content-wrapper">
+      <!-- Header -->
+      <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <h1 class="h2">
+          <i class="fas fa-tachometer-alt me-2 text-success"></i>
+          Dashboard
+        </h1>
+        <div class="btn-toolbar mb-2 mb-md-0">
+          <div class="dropdown">
+            <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+              <i class="fas fa-user me-2"></i>
+              {{ currentUser?.first_name }} {{ currentUser?.last_name }}
+            </button>
+            <ul class="dropdown-menu">
+              <li><a class="dropdown-item" href="#"><i class="fas fa-user me-2"></i>Profile</a></li>
+              <li><a class="dropdown-item" href="#"><i class="fas fa-cog me-2"></i>Settings</a></li>
+              <li><hr class="dropdown-divider"></li>
+              <li><a class="dropdown-item" href="#" (click)="logout()"><i class="fas fa-sign-out-alt me-2"></i>Logout</a></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- Welcome message -->
+      <div class="row mb-4">
+        <div class="col-12">
+          <div class="alert alert-success border-0" role="alert">
+            <i class="fas fa-check-circle me-2"></i>
+            <strong>Welcome back, {{ currentUser?.first_name }}!</strong> 
+            You're logged in as {{ currentUser?.role | titlecase }}.
+          </div>
+        </div>
+      </div>
+
+      <!-- Stats cards -->
+      <div class="row mb-4">
+        <div class="col-md-4 mb-3">
+          <div class="card border-0 shadow-sm h-100">
+            <div class="card-body text-center">
+              <div class="d-flex justify-content-between align-items-center mb-2">
+                <i class="fas fa-users fa-2x text-primary"></i>
+                <span class="badge bg-primary">Total</span>
+              </div>
+              <h3 class="card-title mb-1">{{ stats?.users || 0 }}</h3>
+              <p class="card-text text-muted">Active Users</p>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4 mb-3">
+          <div class="card border-0 shadow-sm h-100">
+            <div class="card-body text-center">
+              <div class="d-flex justify-content-between align-items-center mb-2">
+                <i class="fas fa-user-graduate fa-2x text-success"></i>
+                <span class="badge bg-success">Active</span>
+              </div>
+              <h3 class="card-title mb-1">{{ stats?.players || 0 }}</h3>
+              <p class="card-text text-muted">Players</p>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4 mb-3">
+          <div class="card border-0 shadow-sm h-100">
+            <div class="card-body text-center">
+              <div class="d-flex justify-content-between align-items-center mb-2">
+                <i class="fas fa-users fa-2x text-warning"></i>
+                <span class="badge bg-warning">Active</span>
+              </div>
+              <h3 class="card-title mb-1">{{ stats?.teams || 0 }}</h3>
+              <p class="card-text text-muted">Teams</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick actions -->
+      <div class="row">
+        <div class="col-12">
+          <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white">
+              <h5 class="card-title mb-0">
+                <i class="fas fa-bolt me-2 text-warning"></i>
+                Quick Actions
+              </h5>
+            </div>
+            <div class="card-body">
+              <div class="row">
+                <div class="col-md-3 mb-3" *ngIf="currentUser?.role === 'admin'">
+                  <button class="btn btn-outline-primary w-100" [routerLink]="['/users']">
+                    <i class="fas fa-user-plus fa-2x d-block mb-2"></i>
+                    <small>Manage Users</small>
+                  </button>
+                </div>
+                <div class="col-md-3 mb-3">
+                  <button class="btn btn-outline-success w-100" [routerLink]="['/players']">
+                    
+                    <i class="fas fa-user-graduate fa-2x d-block mb-2"></i>
+                    <small>Add Player</small>
+                  </button>
+                </div>
+                <div class="col-md-3 mb-3">
+                  <button class="btn btn-outline-info w-100" [routerLink]="['/teams']">
+                    <i class="fas fa-users fa-2x d-block mb-2"></i>
+                    <small>Create Team</small>
+                  </button>
+                </div>
+                <div class="col-md-3 mb-3">
+                  <button class="btn btn-outline-warning w-100" [routerLink]="['/users']">
+                    <i class="fas fa-calendar-plus fa-2x d-block mb-2"></i>
+                    <small>Schedule Session</small>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>

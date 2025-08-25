@@ -1,0 +1,1366 @@
+<div class="container-fluid">
+  <div class="row">
+    <!-- Sidebar -->
+    <nav class="col-md-3 col-lg-2 d-md-block sidebar collapse" style="background-color: #2c5530; min-height: 100vh;">
+      <div class="position-sticky pt-3">
+        <div class="text-center mb-4">
+          <h5 class="text-white">Soccer Academy</h5>
+        </div>
+
+        <ul class="nav flex-column">
+          <li class="nav-item">
+            <a class="nav-link text-white" [routerLink]="['/dashboard']">
+              <i class="fas fa-tachometer-alt me-2"></i>Dashboard
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link text-white" [routerLink]="['/users']">
+              <i class="fas fa-users me-2"></i>User Management
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link text-white active" [routerLink]="['/players']" style="background-color: #5cb85c; border-radius: 0.375rem;">
+              <i class="fas fa-user-graduate me-2"></i>Players
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link text-white" [routerLink]="['/teams']">
+              <i class="fas fa-users-cog me-2"></i>Teams
+            </a>
+          </li>
+        </ul>
+
+        <hr class="text-white">
+
+        <ul class="nav flex-column">
+          <li class="nav-item">
+            <a class="nav-link text-white" href="#" (click)="logout()">
+              <i class="fas fa-sign-out-alt me-2"></i>Logout
+            </a>
+          </li>
+        </ul>
+      </div>
+    </nav>
+
+    <!-- Main content -->
+    <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+      <!-- Header -->
+   <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+  <h1 class="h2">
+    <i class="fas fa-user-graduate me-2 text-success"></i>
+    Player Management
+  </h1>
+  <div class="btn-toolbar">
+    <!-- Export Dropdown -->
+    <div class="btn-group me-2" role="group">
+      <button type="button" class="btn btn-outline-success dropdown-toggle" data-bs-toggle="dropdown">
+        <i class="fas fa-download me-2"></i>Export
+      </button>
+      <ul class="dropdown-menu">
+        <li><a class="dropdown-item" href="#" (click)="exportToExcel(); $event.preventDefault()">
+          <i class="fas fa-file-excel me-2 text-success"></i>Export to Excel
+        </a></li>
+        <li><a class="dropdown-item" href="#" (click)="exportToCSV(); $event.preventDefault()">
+          <i class="fas fa-file-csv me-2 text-info"></i>Export to CSV
+        </a></li>
+        <li><a class="dropdown-item" href="#" (click)="exportToPDF(); $event.preventDefault()">
+          <i class="fas fa-file-pdf me-2 text-danger"></i>Export to PDF
+        </a></li>
+        <li><hr class="dropdown-divider"></li>
+        <li><a class="dropdown-item" href="#" (click)="printPlayerList(); $event.preventDefault()">
+          <i class="fas fa-print me-2 text-dark"></i>Print List
+        </a></li>
+      </ul>
+    </div>
+    
+    <!-- Register Player Button -->
+    <button type="button" class="btn btn-primary" (click)="openAddPlayerModal()">
+      <i class="fas fa-user-plus me-2"></i>Register Player
+    </button>
+  </div>
+</div>
+
+      <!-- Temporary Debug Info -->
+      <!-- <div class="alert alert-info mb-4">
+        <h6>Debug Status:</h6>
+        <p><strong>Is Loading:</strong> {{ isLoading }}</p>
+        <p><strong>Players Count:</strong> {{ players.length }}</p>
+        <p><strong>Categories Count:</strong> {{ categories.length }}</p>
+        <p><strong>Error:</strong> {{ error || 'None' }}</p>
+      </div> -->
+
+      <!-- Success/Error Messages -->
+      <div *ngIf="successMessage" class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="fas fa-check-circle me-2"></i>{{ successMessage }}
+        <button type="button" class="btn-close" (click)="successMessage = ''"></button>
+      </div>
+
+      <div *ngIf="error" class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="fas fa-exclamation-triangle me-2"></i>{{ error }}
+        <button type="button" class="btn-close" (click)="error = ''"></button>
+      </div>
+
+      <!-- Loading Spinner -->
+      <div *ngIf="isLoading" class="text-center py-5">
+        <div class="spinner-border text-primary" role="status">
+          <span class="visually-hidden">Loading...</span>
+        </div>
+        <p class="mt-2">Loading players...</p>
+      </div>
+
+      <!-- Main Content -->
+      <div *ngIf="!isLoading">
+        <!-- Search and Filter Section -->
+   <!-- Search and Filter Section -->
+<div class="card border-0 shadow-sm mb-4">
+  <div class="card-body">
+    <div class="row g-3">
+      <div class="col-md-4">
+        <label for="searchInput" class="form-label">Search Players</label>
+        <div class="input-group">
+          <span class="input-group-text"><i class="fas fa-search"></i></span>
+          <input 
+            type="text" 
+            class="form-control" 
+            id="searchInput"
+            placeholder="Search by name or registration number..."
+            [(ngModel)]="searchTerm"
+            (input)="onSearchChange()"
+          >
+          <button 
+            class="btn btn-outline-secondary" 
+            type="button" 
+            (click)="searchTerm = ''; loadPlayers()"
+            *ngIf="searchTerm"
+            title="Clear search"
+          >
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+        <small class="form-text text-muted" *ngIf="searchTerm">
+          Searching for: "<strong>{{ searchTerm }}</strong>"
+        </small>
+      </div>
+      <div class="col-md-3">
+        <label for="categoryFilter" class="form-label">Filter by Category</label>
+        <select 
+          class="form-select" 
+          id="categoryFilter" 
+          [(ngModel)]="selectedCategory" 
+          (change)="onCategoryChange()"
+        >
+          <option value="">All Categories</option>
+          <option *ngFor="let category of categories" [value]="category.id">
+            {{ category.name }} ({{ category.age_min }}-{{ category.age_max }} years)
+          </option>
+        </select>
+      </div>
+      <div class="col-md-3">
+        <label for="genderFilter" class="form-label">Filter by Gender</label>
+        <select 
+          class="form-select" 
+          id="genderFilter" 
+          [(ngModel)]="selectedGender" 
+          (change)="onGenderChange()"
+        >
+          <option value="">All Genders</option>
+          <option value="M">Male</option>
+          <option value="F">Female</option>
+        </select>
+      </div>
+      <div class="col-md-2">
+        <label class="form-label">&nbsp;</label>
+        <div>
+          <button type="button" class="btn btn-outline-secondary w-100" (click)="clearFilters()">
+            <i class="fas fa-times me-2"></i>Clear All
+          </button>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Active Filters Display -->
+    <div class="row mt-2" *ngIf="searchTerm || selectedCategory || selectedGender">
+      <div class="col-12">
+        <small class="text-muted">Active filters:</small>
+        <div class="d-flex flex-wrap gap-1 mt-1">
+          <span class="badge bg-primary" *ngIf="searchTerm">
+            Search: {{ searchTerm }}
+            <button class="btn-close btn-close-white ms-1" (click)="searchTerm = ''; loadPlayers()" style="font-size: 0.6em;"></button>
+          </span>
+          <span class="badge bg-success" *ngIf="selectedCategory">
+            Category: {{ getCategoryName(+selectedCategory) }}
+            <button class="btn-close btn-close-white ms-1" (click)="selectedCategory = ''; loadPlayers()" style="font-size: 0.6em;"></button>
+          </span>
+          <span class="badge bg-info" *ngIf="selectedGender">
+            Gender: {{ selectedGender === 'M' ? 'Male' : 'Female' }}
+            <button class="btn-close btn-close-white ms-1" (click)="selectedGender = ''; loadPlayers()" style="font-size: 0.6em;"></button>
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- Results Summary -->
+<div class="d-flex justify-content-between align-items-center mb-3" *ngIf="!isLoading">
+  <div>
+    <small class="text-muted">
+      Showing <strong>{{ players.length }}</strong> player{{ players.length !== 1 ? 's' : '' }}
+      <span *ngIf="searchTerm || selectedCategory || selectedGender"> matching your filters</span>
+    </small>
+  </div>
+  <div *ngIf="players.length > 0">
+    <small class="text-muted">
+Last updated: {{ getCurrentTime() | date:'short' }}    
+</small>
+  </div>
+</div>
+        <!-- Players Display -->
+        <div class="row">
+          <!-- Show message if no players -->
+          <div *ngIf="players.length === 0" class="col-12">
+            <div class="text-center py-5">
+              <i class="fas fa-user-graduate fa-5x text-muted mb-3"></i>
+              <h5 class="text-muted">No players found</h5>
+              <p class="text-muted">Start by registering your first player!</p>
+              <button type="button" class="btn btn-primary" (click)="openAddPlayerModal()">
+                <i class="fas fa-user-plus me-2"></i>Register First Player
+              </button>
+            </div>
+          </div>
+
+          <!-- Player Cards -->
+          <div *ngFor="let player of players" class="col-md-6 col-lg-4 mb-4">
+            <div class="card h-100 shadow-sm border-0">
+              <div class="card-body">
+                
+                <div class="d-flex align-items-start mb-3">
+                <div class="avatar-circle me-3">
+          <img 
+            *ngIf="player.photo_url" 
+            [src]="getPhotoUrl(player.photo_url)" 
+            [alt]="player.first_name" 
+            class="rounded-circle" 
+            width="50" 
+            height="50" 
+            style="object-fit: cover;"
+            (error)="onImageError($event, player)"
+            (load)="onImageLoad(player)"
+          >
+          <i 
+            *ngIf="!player.photo_url" 
+            class="fas fa-user-graduate fa-2x text-muted"
+          ></i>
+        </div>
+                  <div class="flex-grow-1">
+                    <h6 class="card-title mb-1">{{ player.first_name }} {{ player.last_name }}</h6>
+                    <small class="text-muted">{{ player.registration_number }}</small>
+                  </div>
+                  <div class="dropdown">
+                    <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                      <i class="fas fa-ellipsis-v"></i>
+                    </button>
+                    <ul class="dropdown-menu">
+                      <li><a class="dropdown-item" href="#" (click)="viewPlayer(player); $event.preventDefault()">
+                        <i class="fas fa-eye me-2"></i>View Details
+                      </a></li>
+                      <li><a class="dropdown-item" href="#" (click)="editPlayer(player); $event.preventDefault()">
+                        <i class="fas fa-edit me-2"></i>Edit
+                      </a></li>
+                      <li><a class="dropdown-item" href="#" (click)="evaluatePlayer(player); $event.preventDefault()">
+                      <i class="fas fa-chart-line"></i> Evaluate
+                      </a></li>
+                      <li><hr class="dropdown-divider"></li>
+                      <li><a class="dropdown-item text-danger" href="#" (click)="confirmDelete(player); $event.preventDefault()">
+                        <i class="fas fa-trash me-2"></i>Delete
+                      </a></li>
+                    </ul>
+                  </div>
+                </div>
+                
+                <div class="row g-2 text-sm">
+                  <div class="col-6">
+                    <small class="text-muted">Age:</small><br>
+                    <span class="badge bg-info">{{ calculateAge(player.date_of_birth) }} years</span>
+                  </div>
+                  <div class="col-6">
+                    <small class="text-muted">Category:</small><br>
+                    <span class="badge bg-success">{{ getCategoryName(player.category_id) }}</span>
+                  </div>
+                  <div class="col-6">
+                    <small class="text-muted">Gender:</small><br>
+                    <span class="badge bg-secondary">{{ player.gender === 'M' ? 'Male' : 'Female' }}</span>
+                  </div>
+                  <div class="col-6" *ngIf="player.tshirt_number">
+                    <small class="text-muted">T-Shirt:</small><br>
+                    <span class="badge bg-warning text-dark">#{{ player.tshirt_number }}</span>
+                  </div>
+                </div>
+
+                <div class="mt-3" *ngIf="player.emergency_contact">
+                  <small class="text-muted">Emergency Contact:</small><br>
+                  <small>{{ player.emergency_contact.name }} ({{ player.emergency_contact.relationship }})</small>
+                </div>
+              </div>
+              
+              <div class="card-footer bg-transparent">
+                <div class="d-flex justify-content-between align-items-center">
+                  <small class="text-muted">
+                    <i class="fas fa-calendar me-1"></i>
+                    Registered: {{ player.registration_date | date:'shortDate' }}
+                  </small>
+                  <span [class]="'badge ' + (player.is_active ? 'bg-success' : 'bg-danger')">
+                    {{ player.is_active ? 'Active' : 'Inactive' }}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<!-- Your existing modals go here... -->
+ <!-- Add Player Modal -->
+<div class="modal" [style.display]="showAddPlayerModal ? 'block' : 'none'" [class.show]="showAddPlayerModal">
+  <div class="modal-dialog modal-xl">
+    <div class="modal-content">
+      <form [formGroup]="playerForm" (ngSubmit)="savePlayer()">
+        <div class="modal-header">
+          <h5 class="modal-title">
+            <i class="fas fa-user-plus me-2"></i>Register New Player
+          </h5>
+          <button type="button" class="btn-close" (click)="closeAddPlayerModal()"></button>
+        </div>
+
+        
+        <div class="modal-body">
+           <div class="row mb-4">
+    <div class="col-12">
+      <h6 class="fw-bold text-primary mb-3">
+        <i class="fas fa-camera me-2"></i>Player Photo (Optional)
+      </h6>
+      <div class="d-flex align-items-center">
+        <div class="me-3">
+          <div class="photo-preview">
+            <img 
+              *ngIf="photoPreview" 
+              [src]="photoPreview" 
+              class="rounded-circle" 
+              width="80" 
+              height="80"
+              style="object-fit: cover;"
+            >
+            <div 
+              *ngIf="!photoPreview" 
+              class="bg-light rounded-circle d-flex align-items-center justify-content-center" 
+              style="width: 80px; height: 80px; border: 2px dashed #ccc;"
+            >
+              <i class="fas fa-user-graduate fa-2x text-muted"></i>
+            </div>
+          </div>
+        </div>
+        <div>
+          <input 
+            type="file" 
+            class="form-control mb-2" 
+            accept="image/*"
+            (change)="onFileSelectedForRegistration($event)"
+            #fileInput
+          >
+          <button 
+            type="button" 
+            class="btn btn-outline-danger btn-sm me-2"
+            (click)="removePhoto(); fileInput.value=''"
+            *ngIf="selectedFile || photoPreview"
+          >
+            <i class="fas fa-times me-1"></i>Remove
+          </button>
+          <small class="form-text text-muted d-block">Max size: 2MB. Formats: JPG, PNG, GIF</small>
+        </div>
+      </div>
+    </div>
+  </div>
+
+          
+          <div class="row">
+            <!-- Personal Information -->
+            <div class="col-lg-6">
+              <h6 class="fw-bold text-primary mb-3">
+                <i class="fas fa-user me-2"></i>Personal Information
+              </h6>
+              
+              <div class="row g-3 mb-4">
+                <div class="col-md-6">
+                  <label for="firstName" class="form-label">First Name *</label>
+                  <input 
+                    type="text" 
+                    class="form-control" 
+                    id="firstName"
+                    formControlName="first_name"
+                    [class.is-invalid]="isFieldInvalid('first_name')"
+                  >
+                  <div class="invalid-feedback" *ngIf="isFieldInvalid('first_name')">
+                    First name is required
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <label for="lastName" class="form-label">Last Name *</label>
+                  <input 
+                    type="text" 
+                    class="form-control" 
+                    id="lastName"
+                    formControlName="last_name"
+                    [class.is-invalid]="isFieldInvalid('last_name')"
+                  >
+                  <div class="invalid-feedback" *ngIf="isFieldInvalid('last_name')">
+                    Last name is required
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <label for="dateOfBirth" class="form-label">Date of Birth *</label>
+                  <input 
+                    type="date" 
+                    class="form-control" 
+                    id="dateOfBirth"
+                    formControlName="date_of_birth"
+                    [class.is-invalid]="isFieldInvalid('date_of_birth')"
+                  >
+                  <div class="invalid-feedback" *ngIf="isFieldInvalid('date_of_birth')">
+                    Date of birth is required
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <label for="gender" class="form-label">Gender *</label>
+                  <select 
+                    class="form-select" 
+                    id="gender"
+                    formControlName="gender"
+                    [class.is-invalid]="isFieldInvalid('gender')"
+                  >
+                    <option value="">Select gender</option>
+                    <option value="M">Male</option>
+                    <option value="F">Female</option>
+                  </select>
+                  <div class="invalid-feedback" *ngIf="isFieldInvalid('gender')">
+                    Gender is required
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <label for="phone" class="form-label">Phone</label>
+                  <input 
+                    type="tel" 
+                    class="form-control" 
+                    id="phone"
+                    formControlName="phone"
+                  >
+                </div>
+                <div class="col-md-6">
+                  <label for="email" class="form-label">Email</label>
+                  <input 
+                    type="email" 
+                    class="form-control" 
+                    id="email"
+                    formControlName="email"
+                    [class.is-invalid]="isFieldInvalid('email')"
+                  >
+                  <div class="invalid-feedback" *ngIf="isFieldInvalid('email')">
+                    Please enter a valid email
+                  </div>
+                </div>
+              </div>
+
+              <!-- Academy Information -->
+              <h6 class="fw-bold text-success mb-3">
+                <i class="fas fa-futbol me-2"></i>Academy Information
+              </h6>
+              
+              <div class="row g-3 mb-4">
+                <div class="col-md-6">
+                  <label for="category" class="form-label">Category *</label>
+                  <select 
+                    class="form-select" 
+                    id="category"
+                    formControlName="category_id"
+                    [class.is-invalid]="isFieldInvalid('category_id')"
+                  >
+                    <option value="">Select category</option>
+                    <option *ngFor="let category of categories" [value]="category.id">
+                      {{ category.name }} ({{ category.age_min }}-{{ category.age_max }} years)
+                    </option>
+                  </select>
+                  <div class="invalid-feedback" *ngIf="isFieldInvalid('category_id')">
+                    Category is required
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <label for="tshirtNumber" class="form-label">T-Shirt Number</label>
+                  <input 
+                    type="number" 
+                    class="form-control" 
+                    id="tshirtNumber"
+                    formControlName="tshirt_number"
+                    min="1"
+                    max="99"
+                    placeholder="1-99"
+                  >
+                  <small class="form-text text-muted">Optional - Must be unique within the category</small>
+                </div>
+                <div class="col-12">
+                  <label for="medicalInfo" class="form-label">Medical Information</label>
+                  <textarea 
+                    class="form-control" 
+                    id="medicalInfo"
+                    formControlName="medical_info"
+                    rows="3"
+                    placeholder="Any medical conditions, allergies, medications, etc."
+                  ></textarea>
+                </div>
+              </div>
+            </div>
+
+            <!-- Address & Emergency Contact -->
+            <div class="col-lg-6">
+              <!-- Address Information -->
+              <h6 class="fw-bold text-info mb-3">
+                <i class="fas fa-map-marker-alt me-2"></i>Address Information
+              </h6>
+              
+              <div class="row g-3 mb-4">
+                <div class="col-12">
+                  <label for="street" class="form-label">Street Address *</label>
+                  <input 
+                    type="text" 
+                    class="form-control" 
+                    id="street"
+                    formControlName="street"
+                    [class.is-invalid]="isFieldInvalid('street')"
+                  >
+                  <div class="invalid-feedback" *ngIf="isFieldInvalid('street')">
+                    Street address is required
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <label for="city" class="form-label">City *</label>
+                  <input 
+                    type="text" 
+                    class="form-control" 
+                    id="city"
+                    formControlName="city"
+                    [class.is-invalid]="isFieldInvalid('city')"
+                  >
+                  <div class="invalid-feedback" *ngIf="isFieldInvalid('city')">
+                    City is required
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <label for="state" class="form-label">State/Province *</label>
+                  <input 
+                    type="text" 
+                    class="form-control" 
+                    id="state"
+                    formControlName="state"
+                    [class.is-invalid]="isFieldInvalid('state')"
+                  >
+                  <div class="invalid-feedback" *ngIf="isFieldInvalid('state')">
+                    State/Province is required
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <label for="postalCode" class="form-label">Postal Code *</label>
+                  <input 
+                    type="text" 
+                    class="form-control" 
+                    id="postalCode"
+                    formControlName="postal_code"
+                    [class.is-invalid]="isFieldInvalid('postal_code')"
+                  >
+                  <div class="invalid-feedback" *ngIf="isFieldInvalid('postal_code')">
+                    Postal code is required
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <label for="country" class="form-label">Country *</label>
+                  <input 
+                    type="text" 
+                    class="form-control" 
+                    id="country"
+                    formControlName="country"
+                    [class.is-invalid]="isFieldInvalid('country')"
+                  >
+                  <div class="invalid-feedback" *ngIf="isFieldInvalid('country')">
+                    Country is required
+                  </div>
+                </div>
+              </div>
+
+              <!-- Emergency Contact -->
+              <h6 class="fw-bold text-warning mb-3">
+                <i class="fas fa-phone me-2"></i>Emergency Contact
+              </h6>
+              
+              <div class="row g-3">
+                <div class="col-md-6">
+                  <label for="emergencyName" class="form-label">Contact Name *</label>
+                  <input 
+                    type="text" 
+                    class="form-control" 
+                    id="emergencyName"
+                    formControlName="emergency_contact_name"
+                    [class.is-invalid]="isFieldInvalid('emergency_contact_name')"
+                  >
+                  <div class="invalid-feedback" *ngIf="isFieldInvalid('emergency_contact_name')">
+                    Emergency contact name is required
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <label for="emergencyRelationship" class="form-label">Relationship *</label>
+                  <select 
+                    class="form-select" 
+                    id="emergencyRelationship"
+                    formControlName="emergency_contact_relationship"
+                    [class.is-invalid]="isFieldInvalid('emergency_contact_relationship')"
+                  >
+                    <option value="">Select relationship</option>
+                    <option value="Parent">Parent</option>
+                    <option value="Guardian">Guardian</option>
+                    <option value="Sibling">Sibling</option>
+                    <option value="Grandparent">Grandparent</option>
+                    <option value="Uncle/Aunt">Uncle/Aunt</option>
+                    <option value="Other">Other</option>
+                  </select>
+                  <div class="invalid-feedback" *ngIf="isFieldInvalid('emergency_contact_relationship')">
+                    Relationship is required
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <label for="emergencyPhone" class="form-label">Phone Number *</label>
+                  <input 
+                    type="tel" 
+                    class="form-control" 
+                    id="emergencyPhone"
+                    formControlName="emergency_contact_phone"
+                    [class.is-invalid]="isFieldInvalid('emergency_contact_phone')"
+                  >
+                  <div class="invalid-feedback" *ngIf="isFieldInvalid('emergency_contact_phone')">
+                    Emergency contact phone is required
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <label for="emergencyEmail" class="form-label">Email</label>
+                  <input 
+                    type="email" 
+                    class="form-control" 
+                    id="emergencyEmail"
+                    formControlName="emergency_contact_email"
+                    [class.is-invalid]="isFieldInvalid('emergency_contact_email')"
+                  >
+                  <div class="invalid-feedback" *ngIf="isFieldInvalid('emergency_contact_email')">
+                    Please enter a valid email
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" (click)="closeAddPlayerModal()">
+            Cancel
+          </button>
+          <button 
+            type="submit" 
+            class="btn btn-primary"
+            [disabled]="playerForm.invalid || isSubmitting"
+          >
+            <span *ngIf="isSubmitting" class="spinner-border spinner-border-sm me-2"></span>
+            <i *ngIf="!isSubmitting" class="fas fa-user-plus me-2"></i>
+            Register Player
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+<!-- Edit Player Modal -->
+<div class="modal" [style.display]="showEditModal ? 'block' : 'none'" [class.show]="showEditModal">
+  <div class="modal-dialog modal-xl">
+    <div class="modal-content">
+      <form [formGroup]="playerForm" (ngSubmit)="savePlayer()">
+        <div class="modal-header">
+          <h5 class="modal-title">
+            <i class="fas fa-edit me-2"></i>Edit Player: {{ editingPlayer?.first_name }} {{ editingPlayer?.last_name }}
+          </h5>
+          <button type="button" class="btn-close" (click)="closeEditModal()"></button>
+        </div>
+        <div class="modal-body">
+          <!-- Photo Update Section -->
+          <div class="row mb-4">
+            <div class="col-12">
+              <h6 class="fw-bold text-primary mb-3">
+                <i class="fas fa-camera me-2"></i>Player Photo
+              </h6>
+              <div class="d-flex align-items-center">
+                <div class="me-3">
+                  <div class="photo-preview">
+                    <img 
+                      *ngIf="photoPreview || (editingPlayer?.photo_url && !photoPreview)" 
+                      [src]="photoPreview || getPhotoUrl(editingPlayer?.photo_url || '')" 
+                      class="rounded-circle" 
+                      width="80" 
+                      height="80"
+                      style="object-fit: cover;"
+                    >
+                    <div 
+                      *ngIf="!photoPreview && !editingPlayer?.photo_url" 
+                      class="bg-light rounded-circle d-flex align-items-center justify-content-center" 
+                      style="width: 80px; height: 80px; border: 2px dashed #ccc;"
+                    >
+                      <i class="fas fa-user-graduate fa-2x text-muted"></i>
+                    </div>
+                  </div>
+                </div>
+                <div>
+                  <input 
+                    type="file" 
+                    class="form-control mb-2" 
+                    accept="image/*"
+                    (change)="onFileSelectedForEdit($event)"
+                    #editFileInput
+                  >
+                  <button 
+                    type="button" 
+                    class="btn btn-outline-primary btn-sm me-2"
+                    (click)="updatePlayerPhoto()"
+                    [disabled]="!selectedFile || isUploading"
+                    *ngIf="selectedFile"
+                  >
+                    <span *ngIf="isUploading" class="spinner-border spinner-border-sm me-2"></span>
+                    <i *ngIf="!isUploading" class="fas fa-upload me-2"></i>
+                    Update Photo
+                  </button>
+                  <button 
+                    type="button" 
+                    class="btn btn-outline-danger btn-sm me-2"
+                    (click)="removePhoto(); editFileInput.value=''"
+                    *ngIf="selectedFile || editingPlayer?.photo_url"
+                  >
+                    <i class="fas fa-times me-1"></i>Remove
+                  </button>
+                  <small class="form-text text-muted d-block">Max size: 2MB. Formats: JPG, PNG, GIF</small>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Same form structure as Add Player but with edit prefixes -->
+          <div class="row">
+            <!-- Personal Information -->
+            <div class="col-lg-6">
+              <h6 class="fw-bold text-primary mb-3">
+                <i class="fas fa-user me-2"></i>Personal Information
+              </h6>
+              
+              <div class="row g-3 mb-4">
+                <div class="col-md-6">
+                  <label for="editFirstName" class="form-label">First Name *</label>
+                  <input 
+                    type="text" 
+                    class="form-control" 
+                    id="editFirstName"
+                    formControlName="first_name"
+                    [class.is-invalid]="isFieldInvalid('first_name')"
+                  >
+                  <div class="invalid-feedback" *ngIf="isFieldInvalid('first_name')">
+                    First name is required
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <label for="editLastName" class="form-label">Last Name *</label>
+                  <input 
+                    type="text" 
+                    class="form-control" 
+                    id="editLastName"
+                    formControlName="last_name"
+                    [class.is-invalid]="isFieldInvalid('last_name')"
+                  >
+                  <div class="invalid-feedback" *ngIf="isFieldInvalid('last_name')">
+                    Last name is required
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <label for="editDateOfBirth" class="form-label">Date of Birth *</label>
+                  <input 
+                    type="date" 
+                    class="form-control" 
+                    id="editDateOfBirth"
+                    formControlName="date_of_birth"
+                    [class.is-invalid]="isFieldInvalid('date_of_birth')"
+                  >
+                  <div class="invalid-feedback" *ngIf="isFieldInvalid('date_of_birth')">
+                    Date of birth is required
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <label for="editGender" class="form-label">Gender *</label>
+                  <select 
+                    class="form-select" 
+                    id="editGender"
+                    formControlName="gender"
+                    [class.is-invalid]="isFieldInvalid('gender')"
+                  >
+                    <option value="">Select gender</option>
+                    <option value="M">Male</option>
+                    <option value="F">Female</option>
+                  </select>
+                  <div class="invalid-feedback" *ngIf="isFieldInvalid('gender')">
+                    Gender is required
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <label for="editPhone" class="form-label">Phone</label>
+                  <input 
+                    type="tel" 
+                    class="form-control" 
+                    id="editPhone"
+                    formControlName="phone"
+                  >
+                </div>
+                <div class="col-md-6">
+                  <label for="editEmail" class="form-label">Email</label>
+                  <input 
+                    type="email" 
+                    class="form-control" 
+                    id="editEmail"
+                    formControlName="email"
+                    [class.is-invalid]="isFieldInvalid('email')"
+                  >
+                  <div class="invalid-feedback" *ngIf="isFieldInvalid('email')">
+                    Please enter a valid email
+                  </div>
+                </div>
+              </div>
+
+              <!-- Academy Information -->
+              <h6 class="fw-bold text-success mb-3">
+                <i class="fas fa-futbol me-2"></i>Academy Information
+              </h6>
+              
+              <div class="row g-3 mb-4">
+                <div class="col-md-6">
+                  <label for="editCategory" class="form-label">Category *</label>
+                  <select 
+                    class="form-select" 
+                    id="editCategory"
+                    formControlName="category_id"
+                    [class.is-invalid]="isFieldInvalid('category_id')"
+                  >
+                    <option value="">Select category</option>
+                    <option *ngFor="let category of categories" [value]="category.id">
+                      {{ category.name }} ({{ category.age_min }}-{{ category.age_max }} years)
+                    </option>
+                  </select>
+                  <div class="invalid-feedback" *ngIf="isFieldInvalid('category_id')">
+                    Category is required
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <label for="editTshirtNumber" class="form-label">T-Shirt Number</label>
+                  <input 
+                    type="number" 
+                    class="form-control" 
+                    id="editTshirtNumber"
+                    formControlName="tshirt_number"
+                    min="1"
+                    max="99"
+                    placeholder="1-99"
+                  >
+                  <small class="form-text text-muted">Optional - Must be unique within the category</small>
+                </div>
+                <div class="col-12">
+                  <label for="editMedicalInfo" class="form-label">Medical Information</label>
+                  <textarea 
+                    class="form-control" 
+                    id="editMedicalInfo"
+                    formControlName="medical_info"
+                    rows="3"
+                    placeholder="Any medical conditions, allergies, medications, etc."
+                  ></textarea>
+                </div>
+              </div>
+            </div>
+
+            <!-- Address & Emergency Contact -->
+            <div class="col-lg-6">
+              <!-- Address Information -->
+              <h6 class="fw-bold text-info mb-3">
+                <i class="fas fa-map-marker-alt me-2"></i>Address Information
+              </h6>
+              
+              <div class="row g-3 mb-4">
+                <div class="col-12">
+                  <label for="editStreet" class="form-label">Street Address *</label>
+                  <input 
+                    type="text" 
+                    class="form-control" 
+                    id="editStreet"
+                    formControlName="street"
+                    [class.is-invalid]="isFieldInvalid('street')"
+                  >
+                  <div class="invalid-feedback" *ngIf="isFieldInvalid('street')">
+                    Street address is required
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <label for="editCity" class="form-label">City *</label>
+                  <input 
+                    type="text" 
+                    class="form-control" 
+                    id="editCity"
+                    formControlName="city"
+                    [class.is-invalid]="isFieldInvalid('city')"
+                  >
+                  <div class="invalid-feedback" *ngIf="isFieldInvalid('city')">
+                    City is required
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <label for="editState" class="form-label">State/Province *</label>
+                  <input 
+                    type="text" 
+                    class="form-control" 
+                    id="editState"
+                    formControlName="state"
+                    [class.is-invalid]="isFieldInvalid('state')"
+                  >
+                  <div class="invalid-feedback" *ngIf="isFieldInvalid('state')">
+                    State/Province is required
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <label for="editPostalCode" class="form-label">Postal Code *</label>
+                  <input 
+                    type="text" 
+                    class="form-control" 
+                    id="editPostalCode"
+                    formControlName="postal_code"
+                    [class.is-invalid]="isFieldInvalid('postal_code')"
+                  >
+                  <div class="invalid-feedback" *ngIf="isFieldInvalid('postal_code')">
+                    Postal code is required
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <label for="editCountry" class="form-label">Country *</label>
+                  <input 
+                    type="text" 
+                    class="form-control" 
+                    id="editCountry"
+                    formControlName="country"
+                    [class.is-invalid]="isFieldInvalid('country')"
+                  >
+                  <div class="invalid-feedback" *ngIf="isFieldInvalid('country')">
+                    Country is required
+                  </div>
+                </div>
+              </div>
+
+              <!-- Emergency Contact -->
+              <h6 class="fw-bold text-warning mb-3">
+                <i class="fas fa-phone me-2"></i>Emergency Contact
+              </h6>
+              
+              <div class="row g-3">
+                <div class="col-md-6">
+                  <label for="editEmergencyName" class="form-label">Contact Name *</label>
+                  <input 
+                    type="text" 
+                    class="form-control" 
+                    id="editEmergencyName"
+                    formControlName="emergency_contact_name"
+                    [class.is-invalid]="isFieldInvalid('emergency_contact_name')"
+                  >
+                  <div class="invalid-feedback" *ngIf="isFieldInvalid('emergency_contact_name')">
+                    Emergency contact name is required
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <label for="editEmergencyRelationship" class="form-label">Relationship *</label>
+                  <select 
+                    class="form-select" 
+                    id="editEmergencyRelationship"
+                    formControlName="emergency_contact_relationship"
+                    [class.is-invalid]="isFieldInvalid('emergency_contact_relationship')"
+                  >
+                    <option value="">Select relationship</option>
+                    <option value="Parent">Parent</option>
+                    <option value="Guardian">Guardian</option>
+                    <option value="Sibling">Sibling</option>
+                    <option value="Grandparent">Grandparent</option>
+                    <option value="Uncle/Aunt">Uncle/Aunt</option>
+                    <option value="Other">Other</option>
+                  </select>
+                  <div class="invalid-feedback" *ngIf="isFieldInvalid('emergency_contact_relationship')">
+                    Relationship is required
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <label for="editEmergencyPhone" class="form-label">Phone Number *</label>
+                  <input 
+                    type="tel" 
+                    class="form-control" 
+                    id="editEmergencyPhone"
+                    formControlName="emergency_contact_phone"
+                    [class.is-invalid]="isFieldInvalid('emergency_contact_phone')"
+                  >
+                  <div class="invalid-feedback" *ngIf="isFieldInvalid('emergency_contact_phone')">
+                    Emergency contact phone is required
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <label for="editEmergencyEmail" class="form-label">Email</label>
+                  <input 
+                    type="email" 
+                    class="form-control" 
+                    id="editEmergencyEmail"
+                    formControlName="emergency_contact_email"
+                    [class.is-invalid]="isFieldInvalid('emergency_contact_email')"
+                  >
+                  <div class="invalid-feedback" *ngIf="isFieldInvalid('emergency_contact_email')">
+                    Please enter a valid email
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" (click)="closeEditModal()">
+            Cancel
+          </button>
+          <button 
+            type="submit" 
+            class="btn btn-primary"
+            [disabled]="playerForm.invalid || isSubmitting"
+          >
+            <span *ngIf="isSubmitting" class="spinner-border spinner-border-sm me-2"></span>
+            <i *ngIf="!isSubmitting" class="fas fa-save me-2"></i>
+            Update Player
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+<!-- Player Details View Modal -->
+<div class="modal" [style.display]="showViewModal ? 'block' : 'none'" [class.show]="showViewModal">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">
+          <i class="fas fa-user-graduate me-2"></i>
+          Player Details
+        </h5>
+        <button type="button" class="btn-close" (click)="closeViewModal()"></button>
+      </div>
+      <div class="modal-body" *ngIf="viewingPlayer">
+        <div class="row">
+          <!-- Player Photo and Basic Info -->
+          <div class="col-md-4 text-center mb-4">
+            <div class="player-profile-photo mb-3">
+              <img 
+                *ngIf="viewingPlayer.photo_url" 
+                [src]="getPhotoUrl(viewingPlayer.photo_url)" 
+                [alt]="viewingPlayer.first_name" 
+                class="rounded-circle border border-3 border-primary" 
+                width="150" 
+                height="150"
+                style="object-fit: cover;"
+              >
+              <div 
+                *ngIf="!viewingPlayer.photo_url" 
+                class="bg-light rounded-circle d-flex align-items-center justify-content-center border border-3 border-secondary" 
+                style="width: 150px; height: 150px; margin: 0 auto;"
+              >
+                <i class="fas fa-user-graduate fa-4x text-muted"></i>
+              </div>
+            </div>
+            
+            <h4 class="fw-bold text-primary">{{ viewingPlayer.first_name }} {{ viewingPlayer.last_name }}</h4>
+            <p class="text-muted mb-2">{{ viewingPlayer.registration_number }}</p>
+            
+            <div class="mb-3">
+              <span [class]="'badge fs-6 ' + (viewingPlayer.is_active ? 'bg-success' : 'bg-danger')">
+                {{ viewingPlayer.is_active ? 'Active Player' : 'Inactive Player' }}
+              </span>
+            </div>
+
+            <!-- Quick Stats -->
+            <div class="card bg-light">
+              <div class="card-body">
+                <h6 class="card-title">Quick Stats</h6>
+                <div class="row text-center">
+                  <div class="col-6">
+                    <div class="fw-bold text-info">{{ calculateAge(viewingPlayer.date_of_birth) }}</div>
+                    <small class="text-muted">Years Old</small>
+                  </div>
+                  <div class="col-6" *ngIf="viewingPlayer.tshirt_number">
+                    <div class="fw-bold text-warning">#{{ viewingPlayer.tshirt_number }}</div>
+                    <small class="text-muted">Jersey</small>
+                  </div>
+                  <div class="col-6" *ngIf="!viewingPlayer.tshirt_number">
+                    <div class="fw-bold text-muted">-</div>
+                    <small class="text-muted">Jersey</small>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Detailed Information -->
+          <div class="col-md-8">
+            <!-- Personal Information -->
+            <div class="card mb-3">
+              <div class="card-header bg-primary text-white">
+                <h6 class="mb-0"><i class="fas fa-user me-2"></i>Personal Information</h6>
+              </div>
+              <div class="card-body">
+                <div class="row g-3">
+                  <div class="col-sm-6">
+                    <strong>Full Name:</strong><br>
+                    <span>{{ viewingPlayer.first_name }} {{ viewingPlayer.last_name }}</span>
+                  </div>
+                  <div class="col-sm-6">
+                    <strong>Date of Birth:</strong><br>
+                    <span>{{ viewingPlayer.date_of_birth | date:'fullDate' }}</span>
+                  </div>
+                  <div class="col-sm-6">
+                    <strong>Age:</strong><br>
+                    <span>{{ calculateAge(viewingPlayer.date_of_birth) }} years old</span>
+                  </div>
+                  <div class="col-sm-6">
+                    <strong>Gender:</strong><br>
+                    <span class="badge bg-secondary">{{ viewingPlayer.gender === 'M' ? 'Male' : 'Female' }}</span>
+                  </div>
+                  <div class="col-sm-6" *ngIf="viewingPlayer.phone">
+                    <strong>Phone:</strong><br>
+                    <span><i class="fas fa-phone me-1"></i>{{ viewingPlayer.phone }}</span>
+                  </div>
+                  <div class="col-sm-6" *ngIf="viewingPlayer.email">
+                    <strong>Email:</strong><br>
+                    <span><i class="fas fa-envelope me-1"></i>{{ viewingPlayer.email }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Academy Information -->
+            <div class="card mb-3">
+              <div class="card-header bg-success text-white">
+                <h6 class="mb-0"><i class="fas fa-futbol me-2"></i>Academy Information</h6>
+              </div>
+              <div class="card-body">
+                <div class="row g-3">
+                  <div class="col-sm-6">
+                    <strong>Registration Number:</strong><br>
+                    <span class="font-monospace">{{ viewingPlayer.registration_number }}</span>
+                  </div>
+                  <div class="col-sm-6">
+                    <strong>Registration Date:</strong><br>
+                    <span>{{ viewingPlayer.registration_date | date:'fullDate' }}</span>
+                  </div>
+                  <div class="col-sm-6">
+                    <strong>Category:</strong><br>
+                    <span class="badge bg-success fs-6">{{ getCategoryName(viewingPlayer.category_id) }}</span>
+                  </div>
+                  <div class="col-sm-6">
+                    <strong>T-Shirt Number:</strong><br>
+                    <span *ngIf="viewingPlayer.tshirt_number" class="badge bg-warning text-dark fs-6">#{{ viewingPlayer.tshirt_number }}</span>
+                    <span *ngIf="!viewingPlayer.tshirt_number" class="text-muted">Not assigned</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Address Information -->
+            <div class="card mb-3">
+              <div class="card-header bg-info text-white">
+                <h6 class="mb-0"><i class="fas fa-map-marker-alt me-2"></i>Address Information</h6>
+              </div>
+              <div class="card-body">
+                <div class="row g-3" *ngIf="viewingPlayer.address">
+                  <div class="col-12">
+                    <strong>Street Address:</strong><br>
+                    <span>{{ viewingPlayer.address.street }}</span>
+                  </div>
+                  <div class="col-sm-6">
+                    <strong>City:</strong><br>
+                    <span>{{ viewingPlayer.address.city }}</span>
+                  </div>
+                  <div class="col-sm-6">
+                    <strong>State/Province:</strong><br>
+                    <span>{{ viewingPlayer.address.state }}</span>
+                  </div>
+                  <div class="col-sm-6">
+                    <strong>Postal Code:</strong><br>
+                    <span>{{ viewingPlayer.address.postal_code }}</span>
+                  </div>
+                  <div class="col-sm-6">
+                    <strong>Country:</strong><br>
+                    <span>{{ viewingPlayer.address.country }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Emergency Contact -->
+            <div class="card mb-3">
+              <div class="card-header bg-warning text-dark">
+                <h6 class="mb-0"><i class="fas fa-phone me-2"></i>Emergency Contact</h6>
+              </div>
+              <div class="card-body">
+                <div class="row g-3" *ngIf="viewingPlayer.emergency_contact">
+                  <div class="col-sm-6">
+                    <strong>Contact Name:</strong><br>
+                    <span>{{ viewingPlayer.emergency_contact.name }}</span>
+                  </div>
+                  <div class="col-sm-6">
+                    <strong>Relationship:</strong><br>
+                    <span class="badge bg-secondary">{{ viewingPlayer.emergency_contact.relationship }}</span>
+                  </div>
+                  <div class="col-sm-6">
+                    <strong>Phone Number:</strong><br>
+                    <span><i class="fas fa-phone me-1"></i>{{ viewingPlayer.emergency_contact.phone }}</span>
+                  </div>
+                  <div class="col-sm-6" *ngIf="viewingPlayer.emergency_contact.email">
+                    <strong>Email:</strong><br>
+                    <span><i class="fas fa-envelope me-1"></i>{{ viewingPlayer.emergency_contact.email }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Medical Information -->
+            <div class="card mb-3" *ngIf="viewingPlayer.medical_info">
+              <div class="card-header bg-danger text-white">
+                <h6 class="mb-0"><i class="fas fa-notes-medical me-2"></i>Medical Information</h6>
+              </div>
+              <div class="card-body">
+                <p class="mb-0">{{ viewingPlayer.medical_info }}</p>
+              </div>
+            </div>
+
+            <!-- Timeline -->
+            <div class="card">
+              <div class="card-header bg-secondary text-white">
+                <h6 class="mb-0"><i class="fas fa-clock me-2"></i>Timeline</h6>
+              </div>
+              <div class="card-body">
+                <div class="timeline">
+                  <div class="timeline-item">
+                    <div class="timeline-marker bg-success"></div>
+                    <div class="timeline-content">
+                      <h6 class="timeline-title">Player Registered</h6>
+                      <p class="timeline-text">{{ viewingPlayer.registration_date | date:'fullDate' }}</p>
+                    </div>
+                  </div>
+                  <div class="timeline-item" *ngIf="viewingPlayer.updated_at">
+                    <div class="timeline-marker bg-info"></div>
+                    <div class="timeline-content">
+                      <h6 class="timeline-title">Last Updated</h6>
+                      <p class="timeline-text">{{ viewingPlayer.updated_at | date:'short' }}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="closeViewModal()">
+          <i class="fas fa-times me-2"></i>Close
+        </button>
+        <button type="button" class="btn btn-primary" (click)="editPlayer(viewingPlayer!); closeViewModal()">
+          <i class="fas fa-edit me-2"></i>Edit Player
+        </button>
+        <button type="button" class="btn btn-info" (click)="exportPlayerCard(viewingPlayer!)">
+          <i class="fas fa-download me-2"></i>Export Card
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- Delete Confirmation Modal -->
+<div class="modal" [style.display]="showDeleteModal ? 'block' : 'none'" [class.show]="showDeleteModal">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title text-danger">
+          <i class="fas fa-exclamation-triangle me-2"></i>Confirm Delete Player
+        </h5>
+        <button type="button" class="btn-close" (click)="closeDeleteModal()"></button>
+      </div>
+      <div class="modal-body">
+        <div class="text-center mb-3" *ngIf="playerToDelete">
+          <div class="mb-3">
+            <img 
+              *ngIf="playerToDelete.photo_url" 
+              [src]="getPhotoUrl(playerToDelete.photo_url)" 
+              [alt]="playerToDelete.first_name" 
+              class="rounded-circle" 
+              width="80" 
+              height="80"
+              style="object-fit: cover;"
+            >
+            <div 
+              *ngIf="!playerToDelete.photo_url" 
+              class="bg-light rounded-circle d-flex align-items-center justify-content-center mx-auto" 
+              style="width: 80px; height: 80px;"
+            >
+              <i class="fas fa-user-graduate fa-2x text-muted"></i>
+            </div>
+          </div>
+          <h5 class="fw-bold">{{ playerToDelete.first_name }} {{ playerToDelete.last_name }}</h5>
+          <p class="text-muted">{{ playerToDelete.registration_number }}</p>
+        </div>
+        
+        <div class="alert alert-danger">
+          <i class="fas fa-exclamation-triangle me-2"></i>
+          <strong>Warning:</strong> This action cannot be undone!
+        </div>
+        
+        <p class="text-center">Are you sure you want to permanently delete this player?</p>
+        
+        <div class="bg-light p-3 rounded">
+          <small class="text-muted">
+            <strong>This will remove:</strong><br>
+            • All player information and documents<br>
+            • Player photo and files<br>
+            • Training and match records<br>
+            • All historical data
+          </small>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="closeDeleteModal()">
+          <i class="fas fa-times me-2"></i>Cancel
+        </button>
+        <button type="button" class="btn btn-danger" (click)="deletePlayer()" [disabled]="isSubmitting">
+          <span *ngIf="isSubmitting" class="spinner-border spinner-border-sm me-2"></span>
+          <i *ngIf="!isSubmitting" class="fas fa-trash me-2"></i>
+          Delete Player
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Delete Modal Backdrop -->
+<div *ngIf="showDeleteModal" class="modal-backdrop fade show"></div>
+<!-- View Modal Backdrop -->
+<div *ngIf="showViewModal" class="modal-backdrop fade show"></div>
+<!-- Edit Player Modal Backdrop -->
+<div *ngIf="showEditModal" class="modal-backdrop fade show"></div>
+<!-- Add Player Modal Backdrop -->
+<div *ngIf="showAddPlayerModal" class="modal-backdrop fade show"></div>

@@ -1,0 +1,688 @@
+<div class="container-fluid">
+  <div class="row">
+    <!-- Sidebar -->
+    <nav class="col-md-3 col-lg-2 d-md-block sidebar collapse" style="background-color: #2c5530; min-height: 100vh;">
+      <div class="position-sticky pt-3">
+        <div class="text-center mb-4">
+          <h5 class="text-white">Soccer Academy</h5>
+        </div>
+
+        <ul class="nav flex-column">
+          <li class="nav-item">
+            <a class="nav-link text-white" [routerLink]="['/dashboard']">
+              <i class="fas fa-tachometer-alt me-2"></i>Dashboard
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link text-white active" [routerLink]="['/users']" style="background-color: #5cb85c; border-radius: 0.375rem;">
+              <i class="fas fa-users me-2"></i>User Management
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link text-white" [routerLink]="['/players']">
+              <i class="fas fa-user-graduate me-2"></i>Players
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link text-white" [routerLink]="['/teams']">
+              <i class="fas fa-users-cog me-2"></i>Teams
+            </a>
+          </li>
+        </ul>
+
+        <hr class="text-white">
+
+        <ul class="nav flex-column">
+          <li class="nav-item">
+            <a class="nav-link text-white" href="#" (click)="logout()">
+              <i class="fas fa-sign-out-alt me-2"></i>Logout
+            </a>
+          </li>
+        </ul>
+      </div>
+    </nav>
+
+    <!-- Main content -->
+    <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+      <!-- Header -->
+      <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <h1 class="h2">
+          <i class="fas fa-users me-2 text-primary"></i>
+          User Management
+        </h1>
+        <div class="btn-toolbar">
+          <button type="button" class="btn btn-primary" (click)="openAddUserModal()">
+            <i class="fas fa-user-plus me-2"></i>Add New User
+          </button>
+        </div>
+      </div>
+
+      <!-- Search and Filter Section -->
+      <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body">
+          <div class="row g-3">
+            <div class="col-md-4">
+              <label for="searchInput" class="form-label">Search Users</label>
+              <div class="input-group">
+                <span class="input-group-text"><i class="fas fa-search"></i></span>
+                <input 
+                  type="text" 
+                  class="form-control" 
+                  id="searchInput"
+                  placeholder="Search by name, username, or email..."
+                  [(ngModel)]="searchTerm"
+                  (input)="onSearchChange()"
+                >
+                <button 
+                  class="btn btn-outline-secondary" 
+                  type="button" 
+                  (click)="searchTerm = ''; loadUsers()"
+                  *ngIf="searchTerm"
+                  title="Clear search"
+                >
+                  <i class="fas fa-times"></i>
+                </button>
+              </div>
+            </div>
+            <div class="col-md-3">
+              <label for="roleFilter" class="form-label">Filter by Role</label>
+              <select class="form-select" id="roleFilter" [(ngModel)]="selectedRole" (change)="loadUsers()">
+                <option value="">All Roles</option>
+                <option value="admin">Admin</option>
+                <option value="manager">Manager</option>
+                <option value="coach">Coach</option>
+                <option value="receptionist">Receptionist</option>
+              </select>
+            </div>
+            <div class="col-md-3">
+              <label for="statusFilter" class="form-label">Filter by Status</label>
+              <select class="form-select" id="statusFilter" [(ngModel)]="selectedStatus" (change)="loadUsers()">
+                <option value="">All Status</option>
+                <option value="active">Active</option>
+                <option value="inactive">Inactive</option>
+              </select>
+            </div>
+            <div class="col-md-2">
+              <label class="form-label">&nbsp;</label>
+              <div>
+                <button type="button" class="btn btn-outline-secondary w-100" (click)="clearFilters()">
+                  <i class="fas fa-times me-2"></i>Clear
+                </button>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Active Filters Display -->
+          <div class="row mt-2" *ngIf="searchTerm || selectedRole || selectedStatus">
+            <div class="col-12">
+              <small class="text-muted">Active filters:</small>
+              <div class="d-flex flex-wrap gap-1 mt-1">
+                <span class="badge bg-primary" *ngIf="searchTerm">
+                  Search: {{ searchTerm }}
+                  <button class="btn-close btn-close-white ms-1" (click)="searchTerm = ''; loadUsers()" style="font-size: 0.6em;"></button>
+                </span>
+                <span class="badge bg-success" *ngIf="selectedRole">
+                  Role: {{ selectedRole | titlecase }}
+                  <button class="btn-close btn-close-white ms-1" (click)="selectedRole = ''; loadUsers()" style="font-size: 0.6em;"></button>
+                </span>
+                <span class="badge bg-info" *ngIf="selectedStatus">
+                  Status: {{ selectedStatus | titlecase }}
+                  <button class="btn-close btn-close-white ms-1" (click)="selectedStatus = ''; loadUsers()" style="font-size: 0.6em;"></button>
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Success/Error Messages -->
+      <div *ngIf="successMessage" class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="fas fa-check-circle me-2"></i>{{ successMessage }}
+        <button type="button" class="btn-close" (click)="successMessage = ''"></button>
+      </div>
+
+      <div *ngIf="error" class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="fas fa-exclamation-triangle me-2"></i>{{ error }}
+        <button type="button" class="btn-close" (click)="error = ''"></button>
+      </div>
+
+      <!-- Loading -->
+      <div *ngIf="isLoading" class="text-center py-5">
+        <div class="spinner-border text-primary" role="status">
+          <span class="visually-hidden">Loading...</span>
+        </div>
+        <p class="mt-2">Loading users...</p>
+      </div>
+
+      <!-- Results Summary -->
+      <div class="d-flex justify-content-between align-items-center mb-3" *ngIf="!isLoading">
+        <div>
+          <small class="text-muted">
+            <i class="fas fa-users me-1"></i>
+            Showing <strong>{{ users.length }}</strong> user{{ users.length !== 1 ? 's' : '' }}
+            <span *ngIf="searchTerm || selectedRole || selectedStatus"> matching your filters</span>
+          </small>
+        </div>
+        <div *ngIf="users.length > 0">
+          <small class="text-muted">
+            Last updated: {{ getCurrentTime() | date:'short' }}
+          </small>
+        </div>
+      </div>
+
+      <!-- Users Table -->
+      <div class="card shadow-sm" *ngIf="!isLoading">
+        <div class="card-header bg-light">
+          <div class="d-flex justify-content-between align-items-center">
+            <h6 class="mb-0">
+              <i class="fas fa-users me-2"></i>
+              Users List
+            </h6>
+            <small class="text-muted">Total: {{ users.length }} users</small>
+          </div>
+        </div>
+        <div class="card-body p-0">
+          <div class="table-responsive">
+            <table class="table table-hover table-striped mb-0">
+              <thead class="table-dark">
+                <tr>
+                  <th style="width: 35%;">
+                    <i class="fas fa-user me-2"></i>User
+                  </th>
+                  <th style="width: 15%;">
+                    <i class="fas fa-user-tag me-2"></i>Role
+                  </th>
+                  <th style="width: 15%;">
+                    <i class="fas fa-circle me-2"></i>Status
+                  </th>
+                  <th style="width: 20%;">
+                    <i class="fas fa-calendar me-2"></i>Joined
+                  </th>
+                  <th class="text-center" style="width: 15%;">
+                    <i class="fas fa-cogs me-2"></i>Actions
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let user of users; trackBy: trackByUserId" class="align-middle">
+                  <td>
+                    <div class="d-flex align-items-center">
+                      <div class="avatar-circle me-3">
+                        <i class="fas fa-user"></i>
+                      </div>
+                      <div>
+                        <div class="fw-bold text-dark">
+                          {{ user.first_name }} {{ user.last_name }}
+                        </div>
+                        <small class="text-muted">
+                          <i class="fas fa-at me-1"></i>{{ user.username }}
+                        </small>
+                        <br>
+                        <small class="text-muted">
+                          <i class="fas fa-envelope me-1"></i>{{ user.email }}
+                        </small>
+                      </div>
+                    </div>
+                  </td>
+                  <td>
+                    <span [class]="'badge fs-6 ' + getRoleBadgeClass(user.role)">
+                      <i [class]="getRoleIcon(user.role) + ' me-1'"></i>
+                      {{ user.role | titlecase }}
+                    </span>
+                  </td>
+                  <td>
+                    <span [class]="'badge fs-6 ' + (user.is_active ? 'bg-success' : 'bg-danger')">
+                      <i [class]="(user.is_active ? 'fas fa-check-circle' : 'fas fa-times-circle') + ' me-1'"></i>
+                      {{ user.is_active ? 'Active' : 'Inactive' }}
+                    </span>
+                  </td>
+                  <td>
+                    <div class="text-muted">
+                      <i class="fas fa-calendar-alt me-1"></i>
+                      {{ user.created_at | date:'MMM d, y' }}
+                      <br>
+                      <small>{{ user.created_at | date:'h:mm a' }}</small>
+                    </div>
+                  </td>
+           <td class="text-center">
+  <div class="btn-group btn-group-sm" role="group" aria-label="User actions">
+    <button 
+      type="button" 
+      class="btn btn-outline-primary"
+      (click)="editUser(user)"
+      title="Edit User">
+      <i class="fas fa-edit"></i>
+    </button>
+    <!-- <button 
+      type="button" 
+      class="btn btn-outline-info"
+      (click)="openPasswordModal(user)"
+      title="Change Password">
+      <i class="fas fa-key"></i>
+    </button> -->
+    <button 
+      type="button" 
+      [class]="'btn ' + (user.is_active ? 'btn-outline-warning' : 'btn-outline-success')"
+      (click)="toggleUserStatus(user)"
+      [title]="user.is_active ? 'Deactivate User' : 'Activate User'"
+      [disabled]="user.id === getCurrentUserId()">
+      <i [class]="user.is_active ? 'fas fa-user-slash' : 'fas fa-user-check'"></i>
+    </button>
+    <button 
+      type="button" 
+      class="btn btn-outline-danger"
+      (click)="confirmDelete(user)"
+      title="Delete User"
+      [disabled]="user.id === getCurrentUserId()">
+      <i class="fas fa-trash"></i>
+    </button>
+  </div>
+</td>
+                </tr>
+                
+                <!-- Empty State -->
+                <tr *ngIf="users.length === 0">
+                  <td colspan="5" class="text-center py-5">
+                    <div class="text-muted">
+                      <i class="fas fa-users fa-3x mb-3 d-block"></i>
+                      <h5>No users found</h5>
+                      <p>Try adjusting your search or filter criteria</p>
+                      <button type="button" class="btn btn-primary" (click)="openAddUserModal()">
+                        <i class="fas fa-plus me-2"></i>Add First User
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<!-- Add User Modal -->
+<div class="modal" [style.display]="showAddUserModal ? 'block' : 'none'" [class.show]="showAddUserModal">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <form [formGroup]="userForm" (ngSubmit)="saveUser()">
+        <div class="modal-header">
+          <h5 class="modal-title">
+            <i class="fas fa-user-plus me-2"></i>Add New User
+          </h5>
+          <button type="button" class="btn-close" (click)="closeAddUserModal()"></button>
+        </div>
+        <div class="modal-body">
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label for="firstName" class="form-label">First Name *</label>
+              <input 
+                type="text" 
+                class="form-control" 
+                id="firstName"
+                formControlName="first_name"
+                [class.is-invalid]="isFieldInvalid('first_name')"
+                placeholder="Enter first name"
+              >
+              <div class="invalid-feedback" *ngIf="isFieldInvalid('first_name')">
+                First name is required
+              </div>
+            </div>
+            <div class="col-md-6">
+              <label for="lastName" class="form-label">Last Name *</label>
+              <input 
+                type="text" 
+                class="form-control" 
+                id="lastName"
+                formControlName="last_name"
+                [class.is-invalid]="isFieldInvalid('last_name')"
+                placeholder="Enter last name"
+              >
+              <div class="invalid-feedback" *ngIf="isFieldInvalid('last_name')">
+                Last name is required
+              </div>
+            </div>
+            <div class="col-md-6">
+              <label for="username" class="form-label">Username *</label>
+              <input 
+                type="text" 
+                class="form-control" 
+                id="username"
+                formControlName="username"
+                [class.is-invalid]="isFieldInvalid('username')"
+                placeholder="Enter username"
+              >
+              <div class="invalid-feedback" *ngIf="isFieldInvalid('username')">
+                Username is required
+              </div>
+            </div>
+            <div class="col-md-6">
+              <label for="email" class="form-label">Email *</label>
+              <input 
+                type="email" 
+                class="form-control" 
+                id="email"
+                formControlName="email"
+                [class.is-invalid]="isFieldInvalid('email')"
+                placeholder="Enter email address"
+              >
+              <div class="invalid-feedback" *ngIf="isFieldInvalid('email')">
+                Valid email is required
+              </div>
+            </div>
+            <div class="col-md-6">
+              <label for="role" class="form-label">Role *</label>
+              <select 
+                class="form-select" 
+                id="role"
+                formControlName="role"
+                [class.is-invalid]="isFieldInvalid('role')"
+              >
+                <option value="">Select a role</option>
+                <option value="admin">
+                  <i class="fas fa-crown"></i> Admin
+                </option>
+                <option value="manager">Manager</option>
+                <option value="coach">Coach</option>
+                <option value="receptionist">Receptionist</option>
+              </select>
+              <div class="invalid-feedback" *ngIf="isFieldInvalid('role')">
+                Role is required
+              </div>
+            </div>
+            <div class="col-md-6">
+              <label for="phone" class="form-label">Phone</label>
+              <input 
+                type="tel" 
+                class="form-control" 
+                id="phone"
+                formControlName="phone"
+                placeholder="Enter phone number"
+              >
+            </div>
+            <div class="col-md-12">
+              <label for="password" class="form-label">Password *</label>
+              <input 
+                type="password" 
+                class="form-control" 
+                id="password"
+                formControlName="password"
+                [class.is-invalid]="isFieldInvalid('password')"
+                placeholder="Enter password (min 6 characters)"
+              >
+              <div class="invalid-feedback" *ngIf="isFieldInvalid('password')">
+                Password must be at least 6 characters
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" (click)="closeAddUserModal()">
+            <i class="fas fa-times me-2"></i>Cancel
+          </button>
+          <button 
+            type="submit" 
+            class="btn btn-primary"
+            [disabled]="userForm.invalid || isSubmitting"
+          >
+            <span *ngIf="isSubmitting" class="spinner-border spinner-border-sm me-2"></span>
+            <i *ngIf="!isSubmitting" class="fas fa-user-plus me-2"></i>
+            Create User
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Add User Modal Backdrop -->
+<div *ngIf="showAddUserModal" class="modal-backdrop fade show"></div>
+
+<!-- Edit User Modal -->
+<div class="modal" [style.display]="showEditModal ? 'block' : 'none'" [class.show]="showEditModal">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <form [formGroup]="userForm" (ngSubmit)="saveUser()">
+        <div class="modal-header">
+          <h5 class="modal-title">
+            <i class="fas fa-edit me-2"></i>Edit User: {{ editingUser?.first_name }} {{ editingUser?.last_name }}
+          </h5>
+          <button type="button" class="btn-close" (click)="closeEditModal()"></button>
+        </div>
+        <div class="modal-body">
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label for="editFirstName" class="form-label">First Name *</label>
+              <input 
+                type="text" 
+                class="form-control" 
+                id="editFirstName" 
+                formControlName="first_name"
+                [class.is-invalid]="isFieldInvalid('first_name')"
+              >
+              <div class="invalid-feedback" *ngIf="isFieldInvalid('first_name')">
+                First name is required
+              </div>
+            </div>
+            <div class="col-md-6">
+              <label for="editLastName" class="form-label">Last Name *</label>
+              <input 
+                type="text" 
+                class="form-control" 
+                id="editLastName" 
+                formControlName="last_name"
+                [class.is-invalid]="isFieldInvalid('last_name')"
+              >
+              <div class="invalid-feedback" *ngIf="isFieldInvalid('last_name')">
+                Last name is required
+              </div>
+            </div>
+            <div class="col-md-6">
+              <label for="editUsername" class="form-label">Username *</label>
+              <input 
+                type="text" 
+                class="form-control" 
+                id="editUsername" 
+                formControlName="username"
+                [class.is-invalid]="isFieldInvalid('username')"
+              >
+              <div class="invalid-feedback" *ngIf="isFieldInvalid('username')">
+                Username is required
+              </div>
+            </div>
+            <div class="col-md-6">
+              <label for="editEmail" class="form-label">Email *</label>
+              <input 
+                type="email" 
+                class="form-control" 
+                id="editEmail" 
+                formControlName="email"
+                [class.is-invalid]="isFieldInvalid('email')"
+              >
+              <div class="invalid-feedback" *ngIf="isFieldInvalid('email')">
+                Valid email is required
+              </div>
+            </div>
+            <div class="col-md-6">
+              <label for="editRole" class="form-label">Role *</label>
+              <select 
+                class="form-select" 
+                id="editRole" 
+                formControlName="role"
+                [class.is-invalid]="isFieldInvalid('role')"
+              >
+                <option value="admin">Admin</option>
+                <option value="manager">Manager</option>
+                <option value="coach">Coach</option>
+                <option value="receptionist">Receptionist</option>
+              </select>
+              <div class="invalid-feedback" *ngIf="isFieldInvalid('role')">
+                Role is required
+              </div>
+            </div>
+            <div class="col-md-6">
+              <label for="editPhone" class="form-label">Phone</label>
+              <input type="tel" class="form-control" id="editPhone" formControlName="phone">
+            </div>
+            <div class="col-md-6">
+              <label for="editStatus" class="form-label">Status</label>
+              <select class="form-select" id="editStatus" formControlName="is_active">
+                <option [value]="true">Active</option>
+                <option [value]="false">Inactive</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" (click)="closeEditModal()">
+            <i class="fas fa-times me-2"></i>Cancel
+          </button>
+          <button type="submit" class="btn btn-primary" [disabled]="userForm.invalid || isSubmitting">
+            <span *ngIf="isSubmitting" class="spinner-border spinner-border-sm me-2"></span>
+            <i *ngIf="!isSubmitting" class="fas fa-save me-2"></i>
+            Update User
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Edit Modal Backdrop -->
+<div *ngIf="showEditModal" class="modal-backdrop fade show"></div>
+
+<!-- Change Password Modal -->
+<div class="modal" [style.display]="showPasswordModal ? 'block' : 'none'" [class.show]="showPasswordModal">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form [formGroup]="passwordForm" (ngSubmit)="changePassword()">
+        <div class="modal-header">
+          <h5 class="modal-title">
+            <i class="fas fa-key me-2"></i>Change Password
+          </h5>
+          <button type="button" class="btn-close" (click)="closePasswordModal()"></button>
+        </div>
+        <div class="modal-body">
+          <div class="text-center mb-4" *ngIf="userForPasswordChange">
+            <div class="avatar-circle mx-auto mb-2" style="width: 60px; height: 60px;">
+              <i class="fas fa-user fa-lg"></i>
+            </div>
+            <h6>{{ userForPasswordChange.first_name }} {{ userForPasswordChange.last_name }}</h6>
+            <small class="text-muted">@{{ userForPasswordChange.username }}</small>
+          </div>
+          
+          <div class="mb-3">
+            <label for="currentPassword" class="form-label">Current Password *</label>
+            <input 
+              type="password" 
+              class="form-control" 
+              id="currentPassword"
+              formControlName="currentPassword"
+              [class.is-invalid]="passwordForm.get('currentPassword')?.invalid && passwordForm.get('currentPassword')?.touched"
+              placeholder="Enter current password"
+            >
+            <div class="invalid-feedback">
+              Current password is required
+            </div>
+          </div>
+          <div class="mb-3">
+            <label for="newPassword" class="form-label">New Password *</label>
+            <input 
+              type="password" 
+              class="form-control" 
+              id="newPassword"
+              formControlName="newPassword"
+              [class.is-invalid]="passwordForm.get('newPassword')?.invalid && passwordForm.get('newPassword')?.touched"
+              placeholder="Enter new password (min 6 characters)"
+            >
+            <div class="invalid-feedback">
+              Password must be at least 6 characters
+            </div>
+          </div>
+          <div class="mb-3">
+            <label for="confirmPassword" class="form-label">Confirm New Password *</label>
+            <input 
+              type="password" 
+              class="form-control" 
+              id="confirmPassword"
+              formControlName="confirmPassword"
+              [class.is-invalid]="passwordForm.get('confirmPassword')?.invalid && passwordForm.get('confirmPassword')?.touched"
+              placeholder="Confirm your new password"
+            >
+            <div class="invalid-feedback">
+              <span *ngIf="passwordForm.get('confirmPassword')?.errors?.['required']">Please confirm your password</span>
+              <span *ngIf="passwordForm.get('confirmPassword')?.errors?.['mismatch']">Passwords do not match</span>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" (click)="closePasswordModal()">
+            <i class="fas fa-times me-2"></i>Cancel
+          </button>
+          <button type="submit" class="btn btn-primary" [disabled]="passwordForm.invalid || isSubmitting">
+            <span *ngIf="isSubmitting" class="spinner-border spinner-border-sm me-2"></span>
+            <i *ngIf="!isSubmitting" class="fas fa-key me-2"></i>
+            Change Password
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Password Modal Backdrop -->
+<div *ngIf="showPasswordModal" class="modal-backdrop fade show"></div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal" [style.display]="showDeleteModal ? 'block' : 'none'" [class.show]="showDeleteModal">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title text-danger">
+          <i class="fas fa-exclamation-triangle me-2"></i>Confirm Delete User
+        </h5>
+        <button type="button" class="btn-close" (click)="closeDeleteModal()"></button>
+      </div>
+      <div class="modal-body">
+        <div class="text-center mb-3" *ngIf="userToDelete">
+          <div class="avatar-circle mx-auto mb-2" style="width: 60px; height: 60px;">
+            <i class="fas fa-user fa-lg"></i>
+          </div>
+          <h6>{{ userToDelete.first_name }} {{ userToDelete.last_name }}</h6>
+          <small class="text-muted">@{{ userToDelete.username }}</small>
+        </div>
+        
+        <div class="alert alert-danger">
+          <i class="fas fa-exclamation-triangle me-2"></i>
+          <strong>Warning:</strong> This action cannot be undone!
+        </div>
+        
+        <p class="text-center">Are you sure you want to permanently delete this user?</p>
+        
+        <div class="bg-light p-3 rounded">
+          <small class="text-muted">
+            <strong>This will remove:</strong><br>
+            • User account and login access<br>
+            • All user permissions and roles<br>
+            • User activity history<br>
+            • Any assigned responsibilities
+          </small>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="closeDeleteModal()">
+          <i class="fas fa-times me-2"></i>Cancel
+        </button>
+        <button type="button" class="btn btn-danger" (click)="deleteUser()" [disabled]="isSubmitting">
+          <span *ngIf="isSubmitting" class="spinner-border spinner-border-sm me-2"></span>
+          <i *ngIf="!isSubmitting" class="fas fa-trash-alt me-2"></i>
+          Delete User
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Delete Modal Backdrop -->
+<div *ngIf="showDeleteModal" class="modal-backdrop fade show"></div>

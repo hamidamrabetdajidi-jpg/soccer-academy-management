@@ -9,11 +9,12 @@ import { PlayerValuation, ValuationSummary } from '../../models/valuation.model'
 import { Player } from '../../models/player.model';
 import { User } from '../../models/user.model';
 import { ActivatedRoute } from '@angular/router';
-
+import { SidebarComponent } from '../Shared/sidebar/sidebar.component';
+import { FooterComponent  } from '../Shared/footer/footer.component';
 @Component({
   selector: 'app-player-valuation',
   standalone: true,
-  imports: [CommonModule, RouterModule, ReactiveFormsModule, FormsModule],
+  imports: [CommonModule, RouterModule, ReactiveFormsModule, FormsModule,SidebarComponent,FooterComponent],
   templateUrl: './player-valuation.html',
   styleUrls: ['./player-valuation.scss']
 })
@@ -47,7 +48,7 @@ export class PlayerValuationComponent implements OnInit {
   sortBy = 'overall_rating';
   sortOrder = 'desc';
   searchTimeout: any; // Fix: Add the missing property
-  
+
   // View mode
   viewMode: 'list' | 'cards' | 'chart' = 'cards';
 
@@ -59,7 +60,8 @@ export class PlayerValuationComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-   this.initializeForm();
+  this.initializeValuationForm();
+  this.initializeForm();
   this.loadPlayers();
   this.loadCoaches();
   this.loadValuations();
@@ -74,7 +76,17 @@ export class PlayerValuationComponent implements OnInit {
     }
   });
   }
-
+initializeValuationForm(): void {
+  this.valuationForm = this.formBuilder.group({
+    technical_skills: [0, [Validators.required, Validators.min(0), Validators.max(10)]],
+    tactical_awareness: [0, [Validators.required, Validators.min(0), Validators.max(10)]],
+    physical_condition: [0, [Validators.required, Validators.min(0), Validators.max(10)]],
+    mental_strength: [0, [Validators.required, Validators.min(0), Validators.max(10)]],
+    leadership: [0, [Validators.required, Validators.min(0), Validators.max(10)]],
+    notes: [''],
+    recommendations: ['']
+  });
+}
   initializeForm(): void {
     this.valuationForm = this.formBuilder.group({
       player_id: ['', [Validators.required]],
@@ -272,10 +284,6 @@ export class PlayerValuationComponent implements OnInit {
       });
   }
 
-  updateValuation(): void {
-    // Implementation for updating valuation
-    console.log('Update valuation method');
-  }
 
   viewValuation(valuation: PlayerValuation): void {
     this.selectedValuation = valuation;
@@ -354,7 +362,104 @@ export class PlayerValuationComponent implements OnInit {
       }
     });
   }
+editValuation(valuation: any): void {
+  this.editingValuation = valuation;
+  this.showEditModal = true;
+  this.closeViewModal(); // Close view modal if open
+  
+  // Populate form with existing values
+  this.valuationForm.patchValue({
+    player_id: valuation.player_id,
+    evaluation_date: valuation.evaluation_date,
+    matches_played: valuation.matches_played || 0,
+    goals_scored: valuation.goals_scored || 0,
+    assists: valuation.assists || 0,
+    yellow_cards: valuation.yellow_cards || 0,
+    red_cards: valuation.red_cards || 0,
+    minutes_played: valuation.minutes_played || 0,
+    technical_skills: valuation.technical_skills || 5,
+    physical_skills: valuation.physical_skills || 5,
+    mental_skills: valuation.mental_skills || 5,
+    tactical_skills: valuation.tactical_skills || 5,
+    attacking_rating: valuation.attacking_rating || 5,
+    defending_rating: valuation.defending_rating || 5,
+    goalkeeping_rating: valuation.goalkeeping_rating || 5,
+    potential_rating: valuation.potential_rating || 5,
+    market_value: valuation.market_value || 0,
+    strengths: valuation.strengths || '',
+    weaknesses: valuation.weaknesses || '',
+    development_notes: valuation.development_notes || '',
+    recommended_training: valuation.recommended_training || ''
+  });
+}
+// Update valuation function
+updateValuation(): void {
+  if (this.valuationForm.invalid || !this.editingValuation) {
+    return;
+  }
 
+  this.isSubmitting = true;
+  const token = localStorage.getItem('token');
+  const headers = new HttpHeaders({
+    'Authorization': `Bearer ${token}`,
+    'Content-Type': 'application/json'
+  });
+
+  // Calculate overall rating from the form values
+  const formValues = this.valuationForm.value;
+  const overallRating = (
+    (formValues.technical_skills || 5) +
+    (formValues.physical_skills || 5) +
+    (formValues.mental_skills || 5) +
+    (formValues.tactical_skills || 5)
+  ) / 4;
+
+  const updatedData = {
+    ...this.valuationForm.value,
+    overall_rating: parseFloat(overallRating.toFixed(1))
+  };
+
+  this.http.put(`http://localhost:3000/api/valuations/${this.editingValuation.id}`, updatedData, { headers })
+    .subscribe({
+      next: (response) => {
+        this.successMessage = 'Valuation updated successfully!';
+        this.closeEditModal();
+        this.loadValuations(); // Refresh the list
+        this.isSubmitting = false;
+      },
+      error: (error) => {
+        this.error = error.error?.error || 'Failed to update valuation';
+        this.isSubmitting = false;
+      }
+    });
+}
+
+// // Calculate overall rating
+// calculateOverallRating(values: any): number {
+//   const sum = values.technical_skills + 
+//               values.tactical_awareness + 
+//               values.physical_condition + 
+//               values.mental_strength + 
+//               values.leadership;
+//   return Math.round((sum / 5) * 10) / 10; // Round to 1 decimal
+// }
+calculateOverallRating(): string {
+  if (!this.valuationForm) return '5.0';
+  
+  const technical = this.valuationForm.get('technical_skills')?.value || 5;
+  const physical = this.valuationForm.get('physical_skills')?.value || 5;
+  const mental = this.valuationForm.get('mental_skills')?.value || 5;
+  const tactical = this.valuationForm.get('tactical_skills')?.value || 5;
+  
+  const average = (technical + physical + mental + tactical) / 4;
+  return average.toFixed(1);
+}
+// Close edit modal
+closeEditModal(): void {
+  this.showEditModal = false;
+  this.editingValuation = null;
+  this.valuationForm.reset();
+}
   logout(): void {
     this.authService.logout();
   }

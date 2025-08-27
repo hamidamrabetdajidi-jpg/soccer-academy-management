@@ -8,11 +8,12 @@ import { AuthService } from '../../services/auth.service';
 import { Team, TeamPlayer, CreateTeamRequest, Season } from '../../models/team.model';
 import { Player, Category } from '../../models/player.model';
 import { User } from '../../models/user.model';
-
+import { SidebarComponent } from '../Shared/sidebar/sidebar.component';
+import { FooterComponent  } from '../Shared/footer/footer.component';
 @Component({
   selector: 'app-team-management',
   standalone: true,
-  imports: [CommonModule, RouterModule, ReactiveFormsModule, FormsModule],
+  imports: [CommonModule, RouterModule, ReactiveFormsModule, FormsModule,SidebarComponent,FooterComponent],
   templateUrl: './team-management.html',
   styleUrls: ['./team-management.scss']
 })

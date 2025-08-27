@@ -5,11 +5,12 @@ import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angula
 import { FormsModule } from '@angular/forms';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { AuthService } from '../../services/auth.service';
-
+import { SidebarComponent } from '../Shared/sidebar/sidebar.component';
+import { FooterComponent  } from '../Shared/footer/footer.component';
 @Component({
   selector: 'app-training-sessions',
   standalone: true,
-  imports: [CommonModule, RouterModule, ReactiveFormsModule, FormsModule],
+  imports: [CommonModule, RouterModule, ReactiveFormsModule, FormsModule,SidebarComponent,FooterComponent],
   templateUrl: './training-sessions.html',
   styleUrls: ['./training-sessions.scss']
 })

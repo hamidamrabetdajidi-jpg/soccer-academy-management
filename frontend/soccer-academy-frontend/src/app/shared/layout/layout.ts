@@ -17,9 +17,10 @@ export class LayoutComponent implements OnInit {
   constructor(private authService: AuthService) {}
 
   ngOnInit(): void {
-    this.authService.currentUser$.subscribe(user => {
-      this.currentUser = user;
-    });
+    this.currentUser =this.authService.getCurrentUser();
+    // this.authService.currentUser.subscribe(user => {
+    //   this.currentUser = user;
+    // });
   }
 
   hasRole(role: string): boolean {

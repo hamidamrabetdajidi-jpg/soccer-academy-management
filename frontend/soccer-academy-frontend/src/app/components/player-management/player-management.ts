@@ -7,10 +7,12 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { AuthService } from '../../services/auth.service';
 import { Player, Category, CreatePlayerRequest } from '../../models/player.model';
 import { Router } from '@angular/router';
+import { SidebarComponent } from '../Shared/sidebar/sidebar.component';
+import { FooterComponent  } from '../Shared/footer/footer.component';
 @Component({
   selector: 'app-player-management',
   standalone: true,
-  imports: [CommonModule, RouterModule, ReactiveFormsModule, FormsModule],
+  imports: [CommonModule, RouterModule, ReactiveFormsModule, FormsModule,SidebarComponent,FooterComponent],
   templateUrl: './player-management.html',
   styleUrls: ['./player-management.scss']
 })

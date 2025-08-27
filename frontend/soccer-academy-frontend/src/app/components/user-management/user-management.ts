@@ -6,10 +6,13 @@ import { FormsModule } from '@angular/forms';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { AuthService } from '../../services/auth.service';
 import { User } from '../../models/user.model';
+import { SidebarComponent } from '../Shared/sidebar/sidebar.component';
+import { FooterComponent  } from '../Shared/footer/footer.component';
+
 @Component({
   selector: 'app-user-management',
   standalone: true,
-  imports: [CommonModule, RouterModule, ReactiveFormsModule,FormsModule],
+  imports: [CommonModule, RouterModule, ReactiveFormsModule,FormsModule,SidebarComponent,FooterComponent],
   templateUrl: './user-management.html',
   styleUrls: ['./user-management.scss']
 })

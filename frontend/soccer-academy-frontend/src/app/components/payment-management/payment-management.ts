@@ -8,11 +8,13 @@ import { AuthService } from '../../services/auth.service';
 import { Payment, PaymentCategory, PaymentStats } from '../../models/payment.model';
 import { Chart, registerables } from 'chart.js';
 Chart.register(...registerables);
+import { SidebarComponent } from '../Shared/sidebar/sidebar.component';
+import { FooterComponent  } from '../Shared/footer/footer.component';
 
 @Component({
   selector: 'app-payment-management',
   standalone: true,
-  imports: [CommonModule, RouterModule, ReactiveFormsModule, FormsModule],
+  imports: [CommonModule, RouterModule, ReactiveFormsModule, FormsModule,SidebarComponent,FooterComponent],
   templateUrl: './payment-management.html',
   styleUrls: ['./payment-management.scss']
 })

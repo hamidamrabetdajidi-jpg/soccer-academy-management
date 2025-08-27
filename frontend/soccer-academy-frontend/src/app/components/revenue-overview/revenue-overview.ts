@@ -4,13 +4,14 @@ import { RouterModule } from '@angular/router';
 import { Chart, registerables } from 'chart.js';
 import { RevenueService, RevenueData, DashboardMetrics } from '../../services/revenue.service';
 import { AuthService } from '../../services/auth.service';
-
+import { SidebarComponent } from '../Shared/sidebar/sidebar.component';
+import { FooterComponent  } from '../Shared/footer/footer.component';
 Chart.register(...registerables);
 
 @Component({
   selector: 'app-revenue-overview',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule,SidebarComponent,FooterComponent],
   templateUrl: './revenue-overview.html',
   styleUrls: ['./revenue-overview.scss']
 })

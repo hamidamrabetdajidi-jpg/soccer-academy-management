@@ -4,11 +4,12 @@ import { RouterModule, Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { AuthService } from '../../services/auth.service';
 import { User } from '../../models/user.model';
-
+import { SidebarComponent } from '../Shared/sidebar/sidebar.component';
+import { FooterComponent  } from '../Shared/footer/footer.component';
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule,SidebarComponent,FooterComponent],
   templateUrl: './dashboard.html',
   styleUrls: ['./dashboard.scss']
 })

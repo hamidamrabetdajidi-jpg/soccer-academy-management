@@ -6,11 +6,12 @@ import { FormsModule } from '@angular/forms';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { AuthService } from '../../services/auth.service';
 import { Attendance, AttendanceSummary, AttendanceStats } from '../../models/attendance.model';
-
+import { SidebarComponent } from '../Shared/sidebar/sidebar.component';
+import { FooterComponent  } from '../Shared/footer/footer.component';
 @Component({
   selector: 'app-attendance-management',
   standalone: true,
-  imports: [CommonModule, RouterModule, ReactiveFormsModule, FormsModule],
+  imports: [CommonModule, RouterModule, ReactiveFormsModule, FormsModule,SidebarComponent,FooterComponent],
   templateUrl: './attendance-management.html',
   styleUrls: ['./attendance-management.scss']
 })
@@ -32,7 +33,8 @@ export class AttendanceManagementComponent implements OnInit {
   showBulkAttendanceModal = false;
   showSummaryModal = false;
   showDeleteModal = false;
-  
+  filteredAttendance: Attendance[] = []; // Add this line
+
   selectedAttendance: Attendance | null = null;
   editingAttendance: Attendance | null = null;
   attendanceToDelete: Attendance | null = null;
@@ -163,7 +165,7 @@ export class AttendanceManagementComponent implements OnInit {
     // Build query parameters
     let queryParams = new URLSearchParams();
     
-    if (this.searchTerm && this.searchTerm.trim() !== '') {
+   if (this.searchTerm && this.searchTerm.trim() !== '') {
       queryParams.append('search', this.searchTerm.trim());
     }
     
@@ -198,17 +200,35 @@ export class AttendanceManagementComponent implements OnInit {
       .subscribe({
         next: (response) => {
           this.attendance = response.attendance || [];
+          this.filteredAttendance = [...this.attendance]; // Add this line
           this.stats = response.stats || null;
           this.isLoading = false;
-          console.log('📊 Loaded attendance records:', this.attendance.length);
         },
         error: (error) => {
           this.error = error.error?.error || 'Failed to load attendance records';
           this.attendance = [];
+          this.filteredAttendance = []; // Add this line
           this.isLoading = false;
-          console.error('❌ Error loading attendance:', error);
         }
       });
+  }
+ filterAttendanceLocally(): void {
+    if (!this.searchTerm || this.searchTerm.trim() === '') {
+      this.filteredAttendance = [...this.attendance];
+      return;
+    }
+    
+    const search = this.searchTerm.toLowerCase().trim();
+    
+    this.filteredAttendance = this.attendance.filter(record => {
+      const playerName = (record.player_name || '').toLowerCase();
+      const eventTitle = (record.event_title || '').toLowerCase();
+      const status = (record.status || '').toLowerCase();
+      
+      return playerName.includes(search) || 
+             eventTitle.includes(search) ||
+             status.includes(search);
+    });
   }
 
   loadAttendanceSummary(): void {
@@ -538,13 +558,14 @@ export class AttendanceManagementComponent implements OnInit {
     this.loadAttendance();
   }
 
-  clearFilters(): void {
+   clearFilters(): void {
     this.searchTerm = '';
     this.selectedStatus = '';
     this.selectedEventType = '';
     this.selectedPlayer = '';
     this.startDate = '';
     this.endDate = '';
+    this.filteredAttendance = [...this.attendance]; // Add this line
     this.loadAttendance();
   }
 

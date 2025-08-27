@@ -16,7 +16,7 @@ import { FieldManagementComponent } from './app/components/field-management/fiel
 import { PaymentManagementComponent } from './app/components/payment-management/payment-management';
 import { RevenueOverviewComponent } from './app/components/revenue-overview/revenue-overview';
 import { AttendanceManagementComponent} from './app/components/attendance-management/attendance-management';
-
+import { PermissionGuard } from './app/guards/permission.guard';
 import { AuthGuard } from './app/guards/auth.guard';
 import { LoginGuard } from './app/guards/login.guard';
 import { Routes } from '@angular/router';
@@ -25,8 +25,10 @@ const routes: Routes = [
   { path: '', redirectTo: '/dashboard', pathMatch: 'full' },
   { path: 'login', component: LoginComponent, canActivate: [LoginGuard] },
   { path: 'dashboard', component: DashboardComponent, canActivate: [AuthGuard] },
-  { path: 'users', component: UserManagementComponent, canActivate: [AuthGuard], data: { roles: ['admin'] } },
-  { path: 'players', component: PlayerManagementComponent, canActivate: [AuthGuard] },
+  { path: 'users', component: UserManagementComponent,canActivate: [AuthGuard, PermissionGuard],
+    data: { permissions: ['view_users'] } },
+  { path: 'players', component: PlayerManagementComponent,canActivate: [AuthGuard, PermissionGuard],
+    data: { permissions: ['view_players'] } },
   { path: 'teams', component: TeamManagementComponent, canActivate: [AuthGuard] },
   { path: 'valuations', component: PlayerValuationComponent, canActivate: [AuthGuard] },
   { path: 'training-sessions', component: TrainingSessionsComponent, canActivate: [AuthGuard] },

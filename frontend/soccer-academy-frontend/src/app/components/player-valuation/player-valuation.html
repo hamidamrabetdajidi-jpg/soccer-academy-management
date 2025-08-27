@@ -1,53 +1,8 @@
 <div class="container-fluid">
   <div class="row">
     <!-- Sidebar -->
-    <nav class="col-md-3 col-lg-2 d-md-block sidebar collapse" style="background-color: #2c5530; min-height: 100vh;">
-      <div class="position-sticky pt-3">
-        <div class="text-center mb-4">
-          <h5 class="text-white">
-            <i class="fas fa-futbol me-2"></i>Soccer Academy
-          </h5>
-        </div>
+    <app-sidebar></app-sidebar>
 
-        <ul class="nav flex-column">
-          <li class="nav-item">
-            <a class="nav-link text-white" [routerLink]="['/dashboard']">
-              <i class="fas fa-tachometer-alt me-2"></i>Dashboard
-            </a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link text-white" [routerLink]="['/users']">
-              <i class="fas fa-users me-2"></i>User Management
-            </a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link text-white" [routerLink]="['/players']">
-              <i class="fas fa-user-graduate me-2"></i>Players
-            </a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link text-white" [routerLink]="['/teams']">
-              <i class="fas fa-users-cog me-2"></i>Teams
-            </a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link text-white active" [routerLink]="['/valuations']" style="background-color: #5cb85c; border-radius: 0.375rem;">
-              <i class="fas fa-chart-line me-2"></i>Player Valuation
-            </a>
-          </li>
-        </ul>
-
-        <hr class="text-white">
-
-        <ul class="nav flex-column">
-          <li class="nav-item">
-            <a class="nav-link text-white" href="#" (click)="logout()">
-              <i class="fas fa-sign-out-alt me-2"></i>Logout
-            </a>
-          </li>
-        </ul>
-      </div>
-    </nav>
 
     <!-- Main content -->
     <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
@@ -842,13 +797,294 @@
        <button type="button" class="btn btn-secondary" (click)="closeViewModal()">
          <i class="fas fa-times me-2"></i>Close
        </button>
-       <button type="button" class="btn btn-primary" *ngIf="selectedValuation">
-         <i class="fas fa-edit me-2"></i>Edit Evaluation
-       </button>
+        <button type="button" class="btn btn-primary" *ngIf="selectedValuation" (click)="editValuation(selectedValuation)">
+      <i class="fas fa-edit me-2"></i>Edit Evaluation
+        </button>
      </div>
    </div>
  </div>
 </div>
+<!-- Edit Valuation Modal -->
+<div class="modal" [style.display]="showEditModal ? 'block' : 'none'" [class.show]="showEditModal">
+  <div class="modal-dialog modal-xl">
+    <div class="modal-content">
+      <form [formGroup]="valuationForm" (ngSubmit)="updateValuation()">
+        <div class="modal-header">
+          <h5 class="modal-title">
+            <i class="fas fa-edit me-2"></i>Edit Evaluation
+          </h5>
+          <button type="button" class="btn-close" (click)="closeEditModal()"></button>
+        </div>
+        
+        <div class="modal-body">
+          <!-- Player Info Display -->
+          <div class="alert alert-info" *ngIf="editingValuation">
+            <strong>Player:</strong> {{ getPlayerName(editingValuation.player_id) }}<br>
+            <strong>Evaluation Date:</strong> {{ editingValuation.evaluation_date | date:'shortDate' }}
+          </div>
 
+          <!-- Performance Metrics -->
+          <div class="col-12">
+            <h6 class="text-primary">
+              <i class="fas fa-chart-bar me-2"></i>Performance Metrics
+            </h6>
+            <div class="row g-3">
+              <div class="col-md-2">
+                <label class="form-label">Matches</label>
+                <input type="number" class="form-control" formControlName="matches_played" min="0">
+              </div>
+              <div class="col-md-2">
+                <label class="form-label">Goals</label>
+                <input type="number" class="form-control" formControlName="goals_scored" min="0">
+              </div>
+              <div class="col-md-2">
+                <label class="form-label">Assists</label>
+                <input type="number" class="form-control" formControlName="assists" min="0">
+              </div>
+              <div class="col-md-2">
+                <label class="form-label">Yellow Cards</label>
+                <input type="number" class="form-control" formControlName="yellow_cards" min="0">
+              </div>
+              <div class="col-md-2">
+                <label class="form-label">Red Cards</label>
+                <input type="number" class="form-control" formControlName="red_cards" min="0">
+              </div>
+              <div class="col-md-2">
+                <label class="form-label">Minutes</label>
+                <input type="number" class="form-control" formControlName="minutes_played" min="0">
+              </div>
+            </div>
+          </div>
+
+          <!-- Skill Ratings -->
+          <div class="col-12 mt-3">
+            <h6 class="text-primary">
+              <i class="fas fa-star me-2"></i>Skill Ratings (1-10 scale)
+            </h6>
+            <div class="row g-3">
+              <div class="col-md-3">
+                <label class="form-label">Technical Skills</label>
+                <input 
+                  type="range" 
+                  class="form-range" 
+                  formControlName="technical_skills" 
+                  min="1" 
+                  max="10" 
+                  step="0.5"
+                >
+                <div class="d-flex justify-content-between">
+                  <small>1</small>
+                  <span class="badge bg-info">{{ valuationForm.get('technical_skills')?.value || 5 }}/10</span>
+                  <small>10</small>
+                </div>
+              </div>
+              <div class="col-md-3">
+                <label class="form-label">Physical Skills</label>
+                <input 
+                  type="range" 
+                  class="form-range" 
+                  formControlName="physical_skills" 
+                  min="1" 
+                  max="10" 
+                  step="0.5"
+                >
+                <div class="d-flex justify-content-between">
+                  <small>1</small>
+                  <span class="badge bg-warning">{{ valuationForm.get('physical_skills')?.value || 5 }}/10</span>
+                  <small>10</small>
+                </div>
+              </div>
+              <div class="col-md-3">
+                <label class="form-label">Mental Skills</label>
+                <input 
+                  type="range" 
+                  class="form-range" 
+                  formControlName="mental_skills" 
+                  min="1" 
+                  max="10" 
+                  step="0.5"
+                >
+                <div class="d-flex justify-content-between">
+                  <small>1</small>
+                  <span class="badge bg-success">{{ valuationForm.get('mental_skills')?.value || 5 }}/10</span>
+                  <small>10</small>
+                </div>
+              </div>
+              <div class="col-md-3">
+                <label class="form-label">Tactical Skills</label>
+                <input 
+                  type="range" 
+                  class="form-range" 
+                  formControlName="tactical_skills" 
+                  min="1" 
+                  max="10" 
+                  step="0.5"
+                >
+                <div class="d-flex justify-content-between">
+                  <small>1</small>
+                  <span class="badge bg-danger">{{ valuationForm.get('tactical_skills')?.value || 5 }}/10</span>
+                  <small>10</small>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Position Specific Ratings -->
+          <div class="col-12 mt-3">
+            <h6 class="text-primary">
+              <i class="fas fa-running me-2"></i>Position Specific Ratings
+            </h6>
+            <div class="row g-3">
+              <div class="col-md-4">
+                <label class="form-label">Attacking</label>
+                <input 
+                  type="range" 
+                  class="form-range" 
+                  formControlName="attacking_rating" 
+                  min="1" 
+                  max="10" 
+                  step="0.5"
+                >
+                <div class="text-center">
+                  <span class="badge bg-primary">{{ valuationForm.get('attacking_rating')?.value || 5 }}/10</span>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <label class="form-label">Defending</label>
+                <input 
+                  type="range" 
+                  class="form-range" 
+                  formControlName="defending_rating" 
+                  min="1" 
+                  max="10" 
+                  step="0.5"
+                >
+                <div class="text-center">
+                  <span class="badge bg-secondary">{{ valuationForm.get('defending_rating')?.value || 5 }}/10</span>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <label class="form-label">Goalkeeping</label>
+                <input 
+                  type="range" 
+                  class="form-range" 
+                  formControlName="goalkeeping_rating" 
+                  min="1" 
+                  max="10" 
+                  step="0.5"
+                >
+                <div class="text-center">
+                  <span class="badge bg-dark">{{ valuationForm.get('goalkeeping_rating')?.value || 5 }}/10</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Overall Assessment -->
+          <div class="col-12 mt-3">
+            <h6 class="text-primary">
+              <i class="fas fa-trophy me-2"></i>Overall Assessment
+            </h6>
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label class="form-label">Potential Rating</label>
+                <input 
+                  type="range" 
+                  class="form-range" 
+                  formControlName="potential_rating" 
+                  min="1" 
+                  max="10" 
+                  step="0.5"
+                >
+                <div class="text-center">
+                  <span class="badge bg-warning">{{ valuationForm.get('potential_rating')?.value || 5 }}/10</span>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Market Value</label>
+                <div class="input-group">
+                  <span class="input-group-text">$</span>
+                  <input type="number" class="form-control" formControlName="market_value" min="0">
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Qualitative Assessment -->
+          <div class="col-12 mt-3">
+            <h6 class="text-primary">
+              <i class="fas fa-clipboard me-2"></i>Qualitative Assessment
+            </h6>
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label class="form-label">Strengths</label>
+                <textarea 
+                  class="form-control" 
+                  formControlName="strengths" 
+                  rows="3"
+                ></textarea>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Areas for Improvement</label>
+                <textarea 
+                  class="form-control" 
+                  formControlName="weaknesses" 
+                  rows="3"
+                ></textarea>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Development Notes</label>
+                <textarea 
+                  class="form-control" 
+                  formControlName="development_notes" 
+                  rows="3"
+                ></textarea>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Recommended Training</label>
+                <textarea 
+                  class="form-control" 
+                  formControlName="recommended_training" 
+                  rows="3"
+                ></textarea>
+              </div>
+            </div>
+          </div>
+
+          <!-- Overall Rating Preview -->
+          <div class="col-12 mt-3">
+            <div class="card bg-light">
+              <div class="card-body text-center">
+                <h6 class="text-primary">Overall Rating Preview</h6>
+                <div class="rating-preview">
+                  <span class="display-4 fw-bold text-success">
+                    {{ calculateOverallRating() }}
+                  </span>
+                  <span class="fs-4 text-muted">/10</span>
+                </div>
+                <small class="text-muted">Calculated from skill ratings average</small>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" (click)="closeEditModal()">
+            Cancel
+          </button>
+          <button type="submit" class="btn btn-primary" [disabled]="valuationForm.invalid || isSubmitting">
+            <span *ngIf="isSubmitting" class="spinner-border spinner-border-sm me-2"></span>
+            <i *ngIf="!isSubmitting" class="fas fa-save me-2"></i>Update Evaluation
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Backdrop for Edit -->
+<div *ngIf="showEditModal" class="modal-backdrop fade show"></div>
+<!-- Modal Backdrop -->
+<div *ngIf="showEditModal" class="modal-backdrop fade show"></div>
 <!-- View Modal Backdrop -->
 <div *ngIf="showViewModal" class="modal-backdrop fade show"></div>
